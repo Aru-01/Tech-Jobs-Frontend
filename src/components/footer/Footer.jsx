@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Github, Twitter, Linkedin, Play as Youtube, Send } from 'lucide-react';
+import { Github, Twitter, Linkedin, Play as Youtube, Send, Facebook } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -34,10 +34,9 @@ const FOOTER_LINKS = {
 };
 
 const SOCIALS = [
-  { icon: <Twitter size={16} />, href: '#', label: 'Twitter' },
-  { icon: <Github size={16} />, href: '#', label: 'GitHub' },
-  { icon: <Linkedin size={16} />, href: '#', label: 'LinkedIn' },
-  { icon: <Youtube size={16} />, href: '#', label: 'YouTube' },
+  { icon: <Facebook size={16} />, href: 'https://www.facebook.com/Aru.0012', label: 'Facebook' },
+  { icon: <Github size={16} />, href: 'https://github.com/aru-01', label: 'GitHub' },
+  { icon: <Linkedin size={16} />, href: 'https://www.linkedin.com/in/aru01', label: 'LinkedIn' },
 ];
 
 export default function Footer() {
@@ -151,7 +150,7 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-1">
             <span className="text-xs" style={{ color: 'var(--muted)' }}>Built for</span>
-            <span className="text-xs gradient-text font-semibold">developers, by developers.</span>
+            <span className="text-xs gradient-text font-semibold">🖤 Aru</span>
           </div>
         </div>
       </div>

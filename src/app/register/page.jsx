@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Chrome, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Chrome, CheckCircle2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/ui/Logo';
 import toast from 'react-hot-toast';
@@ -43,19 +43,15 @@ export default function RegisterPage() {
         if (response.success && token) {
           localStorage.setItem('access_token', token);
           await refreshProfile(token);
-          toast.success('Google login successful! 🚀');
+          toast.success('Welcome to Tech_Jobs! 🚀');
           router.push('/');
-        } else {
-          toast.error(response.message || 'Google authentication failed.');
         }
       } catch (err) {
-        console.error('Google registration error:', err);
-        toast.error('Failed to authenticate with Google.');
+        toast.error('Google authentication failed.');
       } finally {
         setLoading(false);
       }
     },
-    onError: () => toast.error('Google login failed.')
   });
 
   const handleSubmit = async (e) => {
@@ -64,201 +60,191 @@ export default function RegisterPage() {
       toast.error('Please fill in all fields.');
       return;
     }
-    if (strength < 2) {
-      toast.error('Please choose a stronger password.');
-      return;
-    }
     setLoading(true);
     try {
-      const response = await register({
-        full_name: name,
-        email,
-        password,
-        role
-      });
-
+      const response = await register({ full_name: name, email, password, role });
       if (response.success) {
-        toast.success(`Welcome to Tech_Jobs, ${name.split(' ')[0]}! 🚀`);
+        toast.success(`Welcome aboard, ${name.split(' ')[0]}!`);
         router.push('/');
       } else {
-        const errorMsg = response.message || 'Registration failed.';
-        toast.error(errorMsg);
+        toast.error(response.message || 'Registration failed.');
       }
     } catch (error) {
-      toast.error('An unexpected error occurred. Please try again.');
+      toast.error('An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle = { background: 'var(--surface-2)', border: '1px solid var(--border)' };
-
   return (
-    <div className="min-h-screen flex lg:flex-row-reverse" style={{ background: 'var(--background)' }}>
-      {/* Left Panel */}
-      <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
-        className="hidden lg:flex lg:w-1/2 flex-col justify-center p-12 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0a0a20 0%, #1a0535 50%, #050d1f 100%)' }}>
-        <div className="absolute top-1/4 right-1/4 w-72 h-72 rounded-full blur-3xl opacity-25 float-1"
-          style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
-        <div className="absolute bottom-1/3 left-1/4 w-56 h-56 rounded-full blur-3xl opacity-20 float-2"
-          style={{ background: 'radial-gradient(circle, #06b6d4, transparent)' }} />
-        <div className="absolute inset-0 dot-pattern opacity-10" />
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden" style={{ background: '#020617' }}>
+      {/* Background Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20" style={{ background: 'var(--accent)' }} />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20" style={{ background: '#8b5cf6' }} />
+      <div className="absolute inset-0 dot-pattern opacity-30" />
 
-        <div className="relative z-10 mb-12"><Logo size="md" /></div>
-        <div className="relative z-10">
-          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
-            Join the Premier<br />
-            <span className="gradient-text">Tech Job Community</span>
-          </h2>
-          <p className="text-white/60 mb-8">
-            Create your free account and get instant access to thousands of curated tech roles.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: '12K+', sub: 'Active Jobs' },
-              { label: '98K+', sub: 'Hired' },
-              { label: '3.2K+', sub: 'Companies' },
-              { label: '18 days', sub: 'Avg. Hire Time' },
-            ].map((s) => (
-              <div key={s.label} className="glass rounded-2xl p-4" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="text-2xl font-bold gradient-text">{s.label}</div>
-                <div className="text-xs text-white/50 mt-1">{s.sub}</div>
-              </div>
-            ))}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[1100px] grid lg:grid-cols-2 glass-card rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl relative z-10"
+        style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)' }}
+      >
+        {/* Visual Side */}
+        <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-indigo-950/50 to-slate-950/50 border-r border-white/5 order-2">
+          <div><Logo size="md" /></div>
+          
+          <div className="space-y-8">
+            <h1 className="text-4xl xl:text-5xl font-bold text-white leading-[1.1]">
+              Start your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-rose-400">career journey</span> <br />
+              with us.
+            </h1>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: '450+', sub: 'Active Jobs' },
+                { label: '1,200+', sub: 'Success Stories' },
+                { label: '120+', sub: 'Verified Companies' },
+                { label: '24 days', sub: 'Avg. Time to Hire' },
+              ].map((s, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="text-xl font-bold text-white">{s.label}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider">{s.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+              <CheckCircle2 size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Verified Platform</p>
+              <p className="text-xs text-indigo-300">Hand-picked jobs for Bangladeshi talent</p>
+            </div>
           </div>
         </div>
-      </motion.div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }} className="w-full max-w-md">
-          <div className="lg:hidden mb-8 text-center"><Logo size="md" /></div>
-
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>Create your account</h1>
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>
-              Already have an account?{' '}
-              <Link href="/login" className="font-semibold link-hover" style={{ color: 'var(--accent)' }}>Sign in</Link>
-            </p>
+        {/* Form Side */}
+        <div className="p-8 sm:p-12 lg:p-16 flex flex-col justify-center order-1">
+          <div className="lg:hidden mb-8"><Logo size="sm" /></div>
+          
+          <div className="mb-10 text-left">
+            <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
+            <p className="text-slate-400 text-sm">Join the network and land your dream job</p>
           </div>
 
-          {/* Google */}
-          <motion.button onClick={() => googleLogin()} whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl mb-6 text-sm font-semibold cursor-pointer"
-            style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>
-            <Chrome size={18} style={{ color: '#4285f4' }} />
-            Sign up with Google
-          </motion.button>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-            <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>or with email</span>
-            <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+          {/* Role Toggle */}
+          <div className="flex p-1 rounded-2xl bg-white/5 border border-white/10 mb-8">
+            <button 
+              onClick={() => setRole('job_seeker')}
+              className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all ${role === 'job_seeker' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}
+            >
+              Job Seeker
+            </button>
+            <button 
+              onClick={() => setRole('recruiter')}
+              className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all ${role === 'recruiter' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}
+            >
+              Recruiter
+            </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Full Name</label>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl input-glow" style={inputStyle}>
-                <User size={16} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                  placeholder="Alex Johnson"
-                  className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--foreground)' }} />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300 uppercase ml-1">Full Name</label>
+              <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 focus-within:border-indigo-500/50 transition-all">
+                <User size={18} className="text-slate-500" />
+                <input 
+                  type="text" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Tariqul Islam"
+                  className="bg-transparent outline-none text-white w-full text-sm"
+                />
               </div>
             </div>
 
-            {/* Role Selection */}
-            <div className="flex gap-4 mb-2">
-              <button
-                type="button"
-                onClick={() => setRole('job_seeker')}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  role === 'job_seeker'
-                    ? 'bg-[var(--accent)] text-white shadow-lg shadow-indigo-500/30'
-                    : 'bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)]'
-                }`}
-              >
-                Job Seeker
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('recruiter')}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  role === 'recruiter'
-                    ? 'bg-[var(--accent)] text-white shadow-lg shadow-indigo-500/30'
-                    : 'bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)]'
-                }`}
-              >
-                Recruiter
-              </button>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Email Address</label>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl input-glow" style={inputStyle}>
-                <Mail size={16} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex@example.com"
-                  className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--foreground)' }} />
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300 uppercase ml-1">Email</label>
+              <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 focus-within:border-indigo-500/50 transition-all">
+                <Mail size={18} className="text-slate-500" />
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="bg-transparent outline-none text-white w-full text-sm"
+                />
               </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Password</label>
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl input-glow" style={inputStyle}>
-                <Lock size={16} style={{ color: 'var(--muted)', flexShrink: 0 }} />
-                <input type={showPass ? 'text' : 'password'} value={password}
-                  onChange={(e) => setPassword(e.target.value)} placeholder="Min 8 characters"
-                  className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--foreground)' }} />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{ color: 'var(--muted)' }}>
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300 uppercase ml-1">Password</label>
+              <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-white/5 border border-white/10 focus-within:border-indigo-500/50 transition-all">
+                <Lock size={18} className="text-slate-500" />
+                <input 
+                  type={showPass ? 'text' : 'password'} 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Min 8 characters"
+                  className="bg-transparent outline-none text-white w-full text-sm"
+                />
+                <button type="button" onClick={() => setShowPass(!showPass)} className="text-slate-500 hover:text-slate-300">
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-
-              {/* Strength meter */}
+              
+              {/* Password Strength */}
               {password.length > 0 && (
-                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
-                  <div className="flex gap-1.5 mb-1.5">
-                    {[1, 2, 3, 4].map((level) => (
-                      <div key={level} className="flex-1 h-1 rounded-full transition-all duration-300"
-                        style={{ background: strength >= level ? STRENGTH_COLORS[strength] : 'var(--border)' }} />
+                <div className="px-1 pt-1">
+                  <div className="flex gap-1 mb-1">
+                    {[1, 2, 3, 4].map(l => (
+                      <div key={l} className={`h-1 flex-1 rounded-full ${strength >= l ? '' : 'bg-white/5'}`} style={{ backgroundColor: strength >= l ? STRENGTH_COLORS[strength] : '' }} />
                     ))}
                   </div>
-                  <p className="text-xs font-medium" style={{ color: STRENGTH_COLORS[strength] }}>
-                    {STRENGTH_LABELS[strength]}
-                  </p>
-                </motion.div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: STRENGTH_COLORS[strength] }}>{STRENGTH_LABELS[strength]}</span>
+                </div>
               )}
             </div>
 
-            {/* Terms */}
-            <p className="text-xs" style={{ color: 'var(--muted)' }}>
-              By creating an account, you agree to our{' '}
-              <Link href="#" className="link-hover" style={{ color: 'var(--accent)' }}>Terms</Link>
-              {' & '}
-              <Link href="#" className="link-hover" style={{ color: 'var(--accent)' }}>Privacy Policy</Link>
-            </p>
-
-            {/* Submit */}
-            <motion.button type="submit" disabled={loading} whileHover={{ scale: loading ? 1 : 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-bold text-white cursor-pointer"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 30px rgba(99,102,241,0.3)' }}>
-              {loading ? (
-                <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="3" strokeOpacity="0.3" />
-                  <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-              ) : (<>Create Account <ArrowRight size={16} /></>)}
+            <motion.button 
+              type="submit" 
+              disabled={loading}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? 'Creating Account...' : (
+                <>
+                  Create Account
+                  <ArrowRight size={18} />
+                </>
+              )}
             </motion.button>
           </form>
-        </motion.div>
-      </div>
+
+          <div className="my-6 flex items-center gap-4">
+            <div className="h-px flex-1 bg-white/5" />
+            <span className="text-[10px] text-slate-600 font-bold">OR JOIN WITH</span>
+            <div className="h-px flex-1 bg-white/5" />
+          </div>
+
+          <button 
+            onClick={() => googleLogin()}
+            className="w-full py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold text-sm hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+          >
+            <Chrome size={18} />
+            Google
+          </button>
+
+          <p className="mt-8 text-center text-sm text-slate-500">
+            Already have an account? {' '}
+            <Link href="/login" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors">Sign in</Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }
