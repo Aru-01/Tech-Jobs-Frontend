@@ -127,7 +127,7 @@ export default function CompanyDetailPage() {
                     <img 
                       src={getMediaUrl(company.logo || company.logo_url)} 
                       alt={company.company_name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
                     />
                   ) : (
                     company.company_name?.[0] || 'C'

@@ -3,7 +3,11 @@ import { CATEGORIES } from '@/lib/mockData';
 import { Grid3x3, Search } from 'lucide-react';
 
 async function getAllSpecialties() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  if (API_URL.startsWith('NEXT_PUBLIC_API_URL=')) {
+    API_URL = API_URL.replace('NEXT_PUBLIC_API_URL=', '').trim();
+  }
+  
   try {
     const res = await fetch(`${API_URL}/api/dashboard/stats/`, {
       next: { revalidate: 3600 },

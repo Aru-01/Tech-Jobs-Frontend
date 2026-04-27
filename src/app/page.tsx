@@ -9,7 +9,11 @@ import CTABanner from '@/components/sections/CTABanner';
 import { CATEGORIES } from '@/lib/mockData';
 
 async function getCategoryStats() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  let API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  if (API_URL.startsWith('NEXT_PUBLIC_API_URL=')) {
+    API_URL = API_URL.replace('NEXT_PUBLIC_API_URL=', '').trim();
+  }
+  
   try {
     const res = await fetch(`${API_URL}/api/dashboard/stats/`, {
       next: { revalidate: 3600 }, // Revalidate every hour

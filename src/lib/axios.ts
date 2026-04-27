@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+if (BASE_URL.startsWith('NEXT_PUBLIC_API_URL=')) {
+  BASE_URL = BASE_URL.replace('NEXT_PUBLIC_API_URL=', '').trim();
+}
 
 if (typeof window !== 'undefined') {
   console.log('[API Debug] Base URL:', BASE_URL);

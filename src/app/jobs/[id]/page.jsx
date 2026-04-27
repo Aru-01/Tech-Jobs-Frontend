@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, DollarSign, Clock, Calendar, Bookmark,
   Share2, Briefcase, Users, CheckCircle, ExternalLink, Globe, Check,
-  Loader2, Sparkles, Building2
+  Loader2, Sparkles, Building2, Link as LinkIcon, Mail
 } from 'lucide-react';
 import { jobsApi } from '@/lib/api';
 import Badge from '@/components/ui/Badge';
@@ -22,6 +22,11 @@ const TYPE_COLORS = {
   'internship': 'indigo',
   'Full-time': 'green',
   'Part-time': 'amber'
+};
+
+const formatLabel = (text) => {
+  if (!text) return 'N/A';
+  return text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
 export default function JobDetailPage({ params }) {
@@ -81,29 +86,82 @@ export default function JobDetailPage({ params }) {
     );
   }
 
-  const type = job.job_type || job.type;
-  const typeColor = TYPE_COLORS[type] || 'indigo';
+  const type = formatLabel(job.job_type || job.type);
+  const typeColor = TYPE_COLORS[job.job_type || job.type] || 'indigo';
   const companyName = job.company_details?.company_name || job.company_name || 'Tech Company';
   const companyLogo = job.company_details?.logo_url || job.company_logo || null;
   const companyColor = job.companyColor || '#6366f1';
+  const expLevel = formatLabel(job.experience_level);
+  
+  // Banner
+  const bannerUrl = job.banner_image_url || job.banner || null;
 
+  // Description
   const fullDescription = job.full_description || job.description || '';
-  const sections = fullDescription.split('\n\n');
+  const sections = fullDescription.split('\n\n').filter(s => s.trim() !== '');
+
+  // Tech Stack parsing
+  let tags = [];
+  if (Array.isArray(job.tech_stack)) {
+    tags = job.tech_stack;
+  } else if (typeof job.tech_stack === 'string') {
+    let raw = job.tech_stack.trim();
+    if (raw.startsWith('[') && raw.endsWith(']')) {
+      tags = raw.slice(1, -1)
+        .split(',')
+        .map(t => t.trim().replace(/^['"]|['"]$/g, ''))
+        .filter(t => t);
+    } else {
+      tags = raw.split(',').map(t => t.trim()).filter(t => t);
+    }
+  }
+
+  // Extract link or email
+  let applyLink = job.apply_link || null;
+  if (!applyLink) {
+    const urlMatch = fullDescription.match(/(https?:\/\/[^\s]+)/);
+    const emailMatch = fullDescription.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+    if (urlMatch) {
+      applyLink = urlMatch[1];
+    } else if (emailMatch) {
+      applyLink = `mailto:${emailMatch[1]}?subject=Application for ${job.title}`;
+    }
+  }
+
+  const handleApply = () => {
+    if (applyLink) {
+      window.open(applyLink, '_blank', 'noopener noreferrer');
+    } else {
+      toast.success('Application portal is now live! 🚀', { icon: '🔥' });
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#020617]">
-      {/* Premium Hero Section */}
-      <div className="relative pt-32 pb-20 overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 z-0">
-          <div 
-            className="absolute top-0 right-0 w-[50%] h-full opacity-20 blur-[120px]"
-            style={{ background: `radial-gradient(circle, ${companyColor}40, transparent)` }}
-          />
-          <div className="absolute inset-0 dot-pattern opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]" />
-        </div>
+    <div className="min-h-screen bg-[#020617] pb-24">
+      {/* Banner & Hero Area */}
+      <div className="relative overflow-hidden border-b border-white/5">
+        {/* Banner Background */}
+        {bannerUrl ? (
+          <div className="absolute top-0 left-0 w-full h-[400px] z-0 overflow-hidden">
+            <img 
+              src={getMediaUrl(bannerUrl)} 
+              alt={`${companyName} Banner`} 
+              className="w-full h-full object-cover opacity-30 mix-blend-screen"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/90 to-[#020617]" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 z-0">
+            <div 
+              className="absolute top-0 right-0 w-[50%] h-full opacity-20 blur-[120px]"
+              style={{ background: `radial-gradient(circle, ${companyColor}40, transparent)` }}
+            />
+            <div className="absolute inset-0 dot-pattern opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]" />
+          </div>
+        )}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-32 pb-16">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-10">
             <Link href="/jobs" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium">
               <ArrowLeft size={16} /> Back to Search
@@ -113,10 +171,10 @@ export default function JobDetailPage({ params }) {
           <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
               <div className="flex items-center gap-5 mb-8">
-                <div className="w-20 h-20 rounded-[2rem] p-1 bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden">
+                <div className="w-20 h-20 rounded-[2rem] p-1 bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden flex-shrink-0">
                   <div className="w-full h-full rounded-[1.8rem] flex items-center justify-center overflow-hidden" style={{ background: `${companyColor}20` }}>
                     {companyLogo ? (
-                      <img src={getMediaUrl(companyLogo)} alt={companyName} className="w-full h-full object-cover" />
+                      <img src={getMediaUrl(companyLogo)} alt={companyName} className="w-full h-full object-contain p-1" />
                     ) : (
                       <span className="text-2xl font-bold" style={{ color: companyColor }}>{companyName[0]}</span>
                     )}
@@ -124,14 +182,14 @@ export default function JobDetailPage({ params }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">{companyName}</p>
+                    <p className="text-slate-300 font-bold text-xs uppercase tracking-widest">{companyName}</p>
                     {job.company_details?.is_verified && <CheckCircle size={14} className="text-blue-500" />}
                   </div>
                   <Badge color={typeColor} dot className="text-[10px] font-bold uppercase tracking-widest px-3 py-1">{type}</Badge>
                 </div>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-8">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-8 font-sans tracking-tight">
                 {job.title}
               </h1>
 
@@ -140,7 +198,7 @@ export default function JobDetailPage({ params }) {
                   { icon: <MapPin size={18} />, label: job.location, color: 'text-indigo-400' },
                   { icon: <span className="text-xl font-bold">৳</span>, label: job.salary, color: 'text-emerald-400' },
                   { icon: <Clock size={18} />, label: `Posted ${new Date(job.created_at).toLocaleDateString()}`, color: 'text-purple-400' },
-                  { icon: <Users size={18} />, label: job.experience_level, color: 'text-rose-400' },
+                  { icon: <Users size={18} />, label: expLevel, color: 'text-rose-400' },
                 ].map((m, i) => (
                   <div key={i} className="flex items-center gap-2.5 text-slate-300 font-medium">
                     <span className={m.color}>{m.icon}</span>
@@ -168,7 +226,7 @@ export default function JobDetailPage({ params }) {
                 <Button 
                   variant="primary" size="lg" fullWidth 
                   className="!rounded-2xl !py-4 shadow-xl shadow-indigo-500/30"
-                  onClick={() => toast.success('Application portal is now live! 🚀', { icon: '🔥' })}
+                  onClick={handleApply}
                 >
                   Apply Now
                 </Button>
@@ -184,6 +242,13 @@ export default function JobDetailPage({ params }) {
                   </Button>
                 </div>
               </div>
+
+              {applyLink && (
+                 <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-medium">
+                   {applyLink.startsWith('mailto:') ? <Mail size={12} /> : <LinkIcon size={12} />}
+                   <span>External application process</span>
+                 </div>
+              )}
 
               <div className="mt-8 pt-8 border-t border-white/5">
                 <div className="flex items-center gap-3">
@@ -201,7 +266,7 @@ export default function JobDetailPage({ params }) {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:col-span-2 space-y-12">
             <section>
@@ -210,39 +275,42 @@ export default function JobDetailPage({ params }) {
                 Job Description
               </h2>
               <div className="glass-card p-8 sm:p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
-                <div className="space-y-6 text-slate-300 leading-relaxed text-lg">
-                  {sections.map((section, i) => (
-                    <p key={i} className="whitespace-pre-wrap">{section}</p>
-                  ))}
+                <div className="text-slate-300 text-base sm:text-lg leading-relaxed font-sans" style={{ wordBreak: 'break-word' }}>
+                  {sections.map((section, i) => {
+                    if (section.startsWith('**') || section.startsWith('- ')) {
+                      return <div key={i} className="mb-6 whitespace-pre-line">{section}</div>;
+                    }
+                    return <p key={i} className="mb-6 last:mb-0 leading-[1.8]">{section}</p>;
+                  })}
                 </div>
               </div>
             </section>
           </motion.div>
 
           <div className="space-y-8">
-            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02] sticky top-32">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Tech Stack</h3>
               <div className="flex flex-wrap gap-2">
-                {(Array.isArray(job.tech_stack) ? job.tech_stack : (typeof job.tech_stack === 'string' ? job.tech_stack.split(',').filter(t => t) : [])).map((tag) => (
+                {tags.length > 0 ? tags.map((tag) => (
                   <span key={tag} className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold">
                     {tag}
                   </span>
-                ))}
+                )) : (
+                  <span className="text-slate-500 text-sm">Not specified</span>
+                )}
               </div>
-            </motion.div>
 
-            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Summary</h3>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 mt-10">Summary</h3>
               <div className="space-y-4">
                 {[
                   { label: 'Role', value: job.title },
                   { label: 'Type', value: type },
-                  { label: 'Exp', value: job.experience_level },
+                  { label: 'Experience', value: expLevel },
                   { label: 'Deadline', value: job.deadline || 'Ongoing' },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
                     <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
-                    <span className="text-sm font-bold text-slate-200">{value}</span>
+                    <span className="text-sm font-bold text-slate-200 text-right max-w-[60%] truncate" title={value}>{value}</span>
                   </div>
                 ))}
               </div>
