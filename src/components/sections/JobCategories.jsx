@@ -91,30 +91,77 @@ export default function JobCategories({ initialCategories = [] }) {
 
 
   const [categories, setCategories] = useState(enrichCategories(initialCategories));
-  const [isLoading, setIsLoading] = useState(initialCategories.length === 0);
+  const [isLoading, setIsLoading] = useState(true); // always fetch dynamic on client to ensure latest job count
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (initialCategories.length > 0) return;
+    const fetchDynamicStats = async () => {
       try {
-        const response = await dashboardApi.getStats();
-        const stats = response.data?.data || response.data;
-        
-        if (stats && stats.specialties) {
-          const processed = stats.specialties.map(spec => ({
-            label: spec.label,
-            count: `${spec.count} jobs`,
-          }));
-          setCategories(enrichCategories(processed));
-        }
+        setIsLoading(true);
+        // Fetch all jobs to count dynamically
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tech-jobs-backend.vercel.app'}/api/jobs/`);
+        const data = await response.json();
+        const jobs = data.results || data || [];
+
+        // Count categories dynamically from job type, category, or tech_stack
+        const counts = {};
+        jobs.forEach(job => {
+          // If job has tech_stack array, count each
+          if (Array.isArray(job.tech_stack)) {
+            job.tech_stack.forEach(tag => {
+              const lowerTag = tag.toLowerCase();
+              counts[lowerTag] = (counts[lowerTag] || 0) + 1;
+            });
+          } else if (typeof job.tech_stack === 'string') {
+            const raw = job.tech_stack.trim();
+            let tags = [];
+            if (raw.startsWith('[') && raw.endsWith(']')) {
+              tags = raw.slice(1, -1).split(',').map(t => t.trim().replace(/^['"]|['"]$/g, ''));
+            } else {
+              tags = raw.split(',').map(t => t.trim());
+            }
+            tags.filter(t => t).forEach(tag => {
+              const lowerTag = tag.toLowerCase();
+              counts[lowerTag] = (counts[lowerTag] || 0) + 1;
+            });
+          }
+          
+          // Count categories as well
+          if (job.category) {
+            const catLower = job.category.toLowerCase();
+            counts[catLower] = (counts[catLower] || 0) + 1;
+          }
+        });
+
+        // Merge with our predefined categories so we have the nice icons
+        const processed = CATEGORIES.map(cat => {
+          let count = 0;
+          // Look for matching keys in our dynamic counts
+          Object.keys(counts).forEach(key => {
+            if (key.includes(cat.id) || key.includes(cat.label.toLowerCase())) {
+              count += counts[key];
+            }
+          });
+          return {
+            ...cat,
+            count: `${count} jobs`,
+          };
+        });
+
+        // Sort by count descending
+        processed.sort((a, b) => parseInt(b.count) - parseInt(a.count));
+
+        setCategories(enrichCategories(processed));
       } catch (error) {
-        console.error('Failed to fetch job category stats:', error);
+        console.error('Failed to fetch dynamic job stats:', error);
+        if (initialCategories.length > 0) {
+          setCategories(enrichCategories(initialCategories));
+        }
       } finally {
         setIsLoading(false);
       }
     };
-    fetchStats();
-  }, [initialCategories]);
+    fetchDynamicStats();
+  }, []);
 
 
   // Show max 12 (3 lines of 4)

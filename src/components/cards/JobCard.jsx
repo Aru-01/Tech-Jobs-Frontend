@@ -76,7 +76,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
                   <img
                     src={getMediaUrl(companyLogo)}
                     alt={companyName}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1 bg-white/5 rounded-[10px]"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center font-bold text-base text-accent">
@@ -138,7 +138,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
           <div className="mt-auto flex items-center justify-between gap-3 pt-3 border-t border-border/40">
             <div className="flex flex-wrap gap-1.5 h-[24px] overflow-hidden">
               {tags.slice(0, 3).map((tag) => (
-                <span key={tag} className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/5 border border-accent/10 text-accent/80">
+                <span key={tag} className="text-[12px] font-bold px-1.5 py-0.5 rounded-md bg-accent/5 border border-accent/10 text-accent/80">
                   {tag}
                 </span>
               ))}

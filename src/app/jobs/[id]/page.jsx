@@ -140,26 +140,14 @@ export default function JobDetailPage({ params }) {
     <div className="min-h-screen bg-[#020617] pb-24">
       {/* Banner & Hero Area */}
       <div className="relative overflow-hidden border-b border-white/5">
-        {/* Banner Background */}
-        {bannerUrl ? (
-          <div className="absolute top-0 left-0 w-full h-[400px] z-0 overflow-hidden">
-            <img 
-              src={getMediaUrl(bannerUrl)} 
-              alt={`${companyName} Banner`} 
-              className="w-full h-full object-cover opacity-30 mix-blend-screen"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/90 to-[#020617]" />
-          </div>
-        ) : (
-          <div className="absolute inset-0 z-0">
-            <div 
-              className="absolute top-0 right-0 w-[50%] h-full opacity-20 blur-[120px]"
-              style={{ background: `radial-gradient(circle, ${companyColor}40, transparent)` }}
-            />
-            <div className="absolute inset-0 dot-pattern opacity-20" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]" />
-          </div>
-        )}
+        <div className="absolute inset-0 z-0">
+          <div 
+            className="absolute top-0 right-0 w-[50%] h-full opacity-20 blur-[120px]"
+            style={{ background: `radial-gradient(circle, ${companyColor}40, transparent)` }}
+          />
+          <div className="absolute inset-0 dot-pattern opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]" />
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-32 pb-16">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-10">
@@ -189,9 +177,15 @@ export default function JobDetailPage({ params }) {
                 </div>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-8 font-sans tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 font-sans tracking-tight">
                 {job.title}
               </h1>
+              
+              {job.short_description && (
+                <p className="text-lg text-slate-400 mb-8 max-w-2xl leading-relaxed">
+                  {job.short_description}
+                </p>
+              )}
 
               <div className="flex flex-wrap gap-6">
                 {[
@@ -267,6 +261,11 @@ export default function JobDetailPage({ params }) {
 
       {/* Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {bannerUrl && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl glass-card">
+            <img src={getMediaUrl(bannerUrl)} alt="Job Banner" className="w-full h-auto max-h-[400px] object-cover" />
+          </motion.div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:col-span-2 space-y-12">
             <section>
@@ -275,13 +274,8 @@ export default function JobDetailPage({ params }) {
                 Job Description
               </h2>
               <div className="glass-card p-8 sm:p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
-                <div className="text-slate-300 text-base sm:text-lg leading-relaxed font-sans" style={{ wordBreak: 'break-word' }}>
-                  {sections.map((section, i) => {
-                    if (section.startsWith('**') || section.startsWith('- ')) {
-                      return <div key={i} className="mb-6 whitespace-pre-line">{section}</div>;
-                    }
-                    return <p key={i} className="mb-6 last:mb-0 leading-[1.8]">{section}</p>;
-                  })}
+                <div className="text-slate-300 text-base sm:text-lg leading-[1.8] font-sans whitespace-pre-line" style={{ wordBreak: 'break-word' }}>
+                  {fullDescription}
                 </div>
               </div>
             </section>

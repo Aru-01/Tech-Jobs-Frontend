@@ -30,7 +30,7 @@ export default function CompanyCard({ company, index }) {
                 style={{ background: company.color || '#6366f1' }}
               >
                 {logo ? (
-                  <img src={getMediaUrl(logo)} alt={name} className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(logo)} alt={name} className="w-full h-full object-contain p-2 bg-white/5" />
                 ) : (
                   name?.[0]
                 )}

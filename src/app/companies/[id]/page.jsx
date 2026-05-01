@@ -214,10 +214,10 @@ export default function CompanyDetailPage() {
                 <span className="w-1 h-8 bg-indigo-500 rounded-full" />
                 About the Company
               </h2>
-              <div className="glass-card p-8 sm:p-10 rounded-[2rem] border border-white/5 bg-white/[0.02]">
-                <p className="text-slate-300 leading-relaxed text-lg whitespace-pre-line">
+              <div className="glass-card p-8 sm:p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
+                <div className="text-slate-300 text-base sm:text-lg leading-[1.8] font-sans whitespace-pre-line" style={{ wordBreak: 'break-word' }}>
                   {company.full_description || company.short_description || "No description available for this company."}
-                </p>
+                </div>
               </div>
             </motion.section>
 

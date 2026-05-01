@@ -51,10 +51,10 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-40">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { label: 'Countries', val: '140+' },
-            { label: 'Active Jobs', val: '12k+' },
-            { label: 'Developers', val: '500k+' },
-            { label: 'Companies', val: '3.2k+' },
+            { label: 'Divisions', val: '8' },
+            { label: 'Active Jobs', val: '450+' },
+            { label: 'Developers', val: '25k+' },
+            { label: 'Verified Cos', val: '120+' },
           ].map((s, i) => (
             <motion.div
               key={i}
@@ -62,10 +62,10 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center"
+              className="glass-card p-8 rounded-[2rem] text-center border border-white/5"
             >
-              <div className="text-4xl sm:text-5xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>{s.val}</div>
-              <div className="text-sm uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{s.label}</div>
+              <div className="text-4xl sm:text-5xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">{s.val}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-500">{s.label}</div>
             </motion.div>
           ))}
         </div>
