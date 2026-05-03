@@ -45,7 +45,7 @@ export default function RegisterPage() {
   const inputStyle = { background: 'var(--surface-2)', border: '1px solid var(--border)' };
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen flex lg:flex-row-reverse" style={{ background: 'var(--background)' }}>
       {/* Left Panel */}
       <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
         className="hidden lg:flex lg:w-1/2 flex-col justify-center p-12 relative overflow-hidden"

@@ -15,10 +15,10 @@ export default function CompanyDetailPage() {
   const company = COMPANIES.find(c => c.id === id);
   const companyJobs = JOBS.filter(j => j.company === company?.name);
 
-  if (!company) return <div className="pt-32 text-center text-white">Company not found.</div>;
+  if (!company) return <div className="pt-32 text-center" style={{ color: 'var(--foreground)' }}>Company not found.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen">
       {/* Brand Header */}
       <div className="relative h-[300px] w-full overflow-hidden">
         <div 
@@ -52,14 +52,14 @@ export default function CompanyDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center justify-center md:justify-start gap-3 mb-2"
               >
-                <h1 className="text-4xl sm:text-5xl font-bold text-white">{company.name}</h1>
+                <h1 className="text-4xl sm:text-5xl font-bold" style={{ color: 'var(--foreground)' }}>{company.name}</h1>
                 <CheckCircle2 size={24} className="text-accent" />
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/60 text-sm"
+                className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm" style={{ color: 'var(--muted)' }}
               >
                 <div className="flex items-center gap-1.5"><MapPin size={16} /> {company.location}</div>
                 <div className="flex items-center gap-1.5"><Globe size={16} /> {company.website.replace('https://', '')}</div>
@@ -75,9 +75,9 @@ export default function CompanyDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-12">
             <section>
-              <h2 className="text-2xl font-bold text-white mb-6">About {company.name}</h2>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>About {company.name}</h2>
               <div className="glass-card p-8 rounded-3xl">
-                <p className="text-white/70 leading-relaxed whitespace-pre-line">
+                <p className="leading-relaxed whitespace-pre-line" style={{ color: 'var(--foreground)' }}>
                   {company.fullDescription}
                 </p>
               </div>
@@ -85,8 +85,8 @@ export default function CompanyDetailPage() {
 
             <section>
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold text-white">Open Roles</h2>
-                <div className="text-sm text-white/40">{companyJobs.length} positions available</div>
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>Open Roles</h2>
+                <div className="text-sm" style={{ color: 'var(--muted)' }}>{companyJobs.length} positions available</div>
               </div>
               <div className="space-y-4">
                 {companyJobs.length > 0 ? (
@@ -94,7 +94,7 @@ export default function CompanyDetailPage() {
                     <JobCard key={job.id} job={job} index={i} />
                   ))
                 ) : (
-                  <div className="glass-card p-8 rounded-3xl text-center text-white/40">
+                  <div className="glass-card p-8 rounded-3xl text-center" style={{ color: 'var(--muted)' }}>
                     No open positions at the moment.
                   </div>
                 )}
@@ -106,19 +106,19 @@ export default function CompanyDetailPage() {
           <div className="space-y-8">
             {/* Quick Stats */}
             <div className="glass-card p-6 rounded-3xl space-y-6">
-              <h3 className="text-lg font-bold text-white">Company Profile</h3>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--foreground)' }}>Company Profile</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-white/40 text-sm">Industry</span>
-                  <span className="text-white text-sm font-medium">{company.industry}</span>
+                  <span className="text-sm" style={{ color: 'var(--muted)' }}>Industry</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{company.industry}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-white/40 text-sm">Team Size</span>
-                  <span className="text-white text-sm font-medium">{company.size}</span>
+                  <span className="text-sm" style={{ color: 'var(--muted)' }}>Team Size</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{company.size}</span>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-white/5">
-                  <span className="text-white/40 text-sm">Headquarters</span>
-                  <span className="text-white text-sm font-medium">{company.location}</span>
+                  <span className="text-sm" style={{ color: 'var(--muted)' }}>Headquarters</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{company.location}</span>
                 </div>
               </div>
               
@@ -127,10 +127,10 @@ export default function CompanyDetailPage() {
                   Visit Website
                 </Button>
                 <div className="flex gap-2">
-                  <button className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all">
+                  <button className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all" style={{ color: 'var(--foreground)' }}>
                     <Twitter size={18} />
                   </button>
-                  <button className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-all">
+                  <button className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all" style={{ color: 'var(--foreground)' }}>
                     <Linkedin size={18} />
                   </button>
                 </div>
@@ -139,10 +139,10 @@ export default function CompanyDetailPage() {
 
             {/* Benefits */}
             <div className="glass-card p-6 rounded-3xl">
-              <h3 className="text-lg font-bold text-white mb-6">Company Benefits</h3>
+              <h3 className="text-lg font-bold mb-6" style={{ color: 'var(--foreground)' }}>Company Benefits</h3>
               <div className="space-y-4">
                 {company.benefits.map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-3 text-white/70 text-sm">
+                  <div key={i} className="flex items-center gap-3 text-sm" style={{ color: 'var(--muted)' }}>
                     <div className="w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
                       <ChevronRight size={14} />
                     </div>

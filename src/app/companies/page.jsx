@@ -35,7 +35,7 @@ export default function CompaniesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-4xl sm:text-6xl font-bold text-white mb-6"
+          className="text-4xl sm:text-6xl font-bold mb-6" style={{ color: 'var(--foreground)' }}
         >
           Discover Your Next <br />
           <span className="text-gradient">Dream Workplace</span>
@@ -44,7 +44,7 @@ export default function CompaniesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-white/60 text-lg max-w-2xl mx-auto"
+          className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--muted)' }}
         >
           Explore top-tier companies from early-stage startups to global tech giants. 
           Find the perfect culture and mission that aligns with your goals.
@@ -59,20 +59,20 @@ export default function CompaniesPage() {
         className="glass-card p-4 rounded-3xl mb-12 flex flex-col md:flex-row gap-4"
       >
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--muted)' }} size={20} />
           <input
             type="text"
             placeholder="Search by company name or mission..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white focus:outline-none focus:border-accent/50 transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-accent/50 transition-all" style={{ color: 'var(--foreground)' }}
           />
         </div>
         <div className="flex gap-2">
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value)}
-            className="px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white focus:outline-none focus:border-accent/50 transition-all appearance-none min-w-[160px]"
+            className="px-4 py-3 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-accent/50 transition-all appearance-none min-w-[160px]" style={{ color: 'var(--foreground)' }}
           >
             {industries.map(ind => (
               <option key={ind} value={ind} className="bg-slate-900">{ind}</option>
@@ -93,7 +93,7 @@ export default function CompaniesPage() {
           ))
         ) : (
           <div className="col-span-full py-20 text-center">
-            <p className="text-white/40 text-lg">No companies found matching your criteria.</p>
+            <p className="text-lg" style={{ color: 'var(--muted)' }}>No companies found matching your criteria.</p>
           </div>
         )}
       </div>
@@ -115,8 +115,8 @@ export default function CompaniesPage() {
             <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-4">
               {stat.icon}
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-            <div className="text-sm text-white/40 font-medium uppercase tracking-wider">{stat.label}</div>
+            <div className="text-3xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>{stat.value}</div>
+            <div className="text-sm font-medium uppercase tracking-wider" style={{ color: 'var(--muted)' }}>{stat.label}</div>
           </motion.div>
         ))}
       </div>
