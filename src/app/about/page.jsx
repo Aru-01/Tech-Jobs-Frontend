@@ -31,7 +31,7 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-5xl sm:text-7xl font-bold text-white mb-8"
+          className="text-5xl sm:text-7xl font-bold mb-8" style={{ color: 'var(--foreground)' }}
         >
           Connecting the World’s <br />
           <span className="text-gradient">Most Innovative Teams</span>
@@ -40,7 +40,7 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-white/60 text-xl max-w-3xl mx-auto leading-relaxed"
+          className="text-xl max-w-3xl mx-auto leading-relaxed" style={{ color: 'var(--muted)' }}
         >
           Tech_Jobs started with a simple problem: job boards were noisy, untransparent, and 
           disconnected from the tech reality. We built a platform that puts developers first.
@@ -64,8 +64,8 @@ export default function AboutPage() {
               transition={{ delay: i * 0.1 }}
               className="text-center"
             >
-              <div className="text-4xl sm:text-5xl font-bold text-white mb-2">{s.val}</div>
-              <div className="text-sm text-white/40 uppercase tracking-widest">{s.label}</div>
+              <div className="text-4xl sm:text-5xl font-bold mb-2" style={{ color: 'var(--foreground)' }}>{s.val}</div>
+              <div className="text-sm uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{s.label}</div>
             </motion.div>
           ))}
         </div>
@@ -75,19 +75,19 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-40">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           <div className="lg:w-1/2 space-y-8">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">Our Core Values</h2>
-            <p className="text-white/60 text-lg">
+            <h2 className="text-3xl sm:text-4xl font-bold" style={{ color: 'var(--foreground)' }}>Our Core Values</h2>
+            <p className="text-lg" style={{ color: 'var(--muted)' }}>
               We aren’t just another job board. We are a community of builders who believe 
               that the right job can change a life, and the right hire can change a company.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
               {VALUES.map((v, i) => (
-                <div key={i} className="glass-card p-6 rounded-3xl group hover:border-white/20 transition-all">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-4 text-white group-hover:text-accent transition-colors">
+                <div key={i} className="glass-card p-6 rounded-3xl group hover:border-[var(--accent)] transition-all">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 group-hover:text-[var(--accent)] transition-colors" style={{ background: 'var(--surface-2)', color: 'var(--foreground)' }}>
                     {v.icon}
                   </div>
-                  <h4 className="text-white font-bold mb-2">{v.title}</h4>
-                  <p className="text-white/40 text-sm leading-relaxed">{v.desc}</p>
+                  <h4 className="font-bold mb-2" style={{ color: 'var(--foreground)' }}>{v.title}</h4>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{v.desc}</p>
                 </div>
               ))}
             </div>
@@ -110,7 +110,7 @@ export default function AboutPage() {
           className="glass-card p-12 sm:p-20 rounded-[40px] text-center relative overflow-hidden"
         >
           <div className="relative z-10">
-            <h2 className="text-3xl sm:text-5xl font-bold text-white mb-8">Ready to build the future?</h2>
+            <h2 className="text-3xl sm:text-5xl font-bold mb-8" style={{ color: 'var(--foreground)' }}>Ready to build the future?</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/jobs">
                 <Button variant="primary" size="lg" className="!px-12">Browse Jobs</Button>

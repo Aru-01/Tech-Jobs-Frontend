@@ -46,7 +46,7 @@ export default function TopCompanies() {
         </div>
 
         {/* Company Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {COMPANIES.map((company, i) => (
             <CompanyCard key={company.id} company={company} index={i} />
           ))}
