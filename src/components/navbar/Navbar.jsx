@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Plus, LayoutDashboard, LogOut, Briefcase, User } from 'lucide-react';
+import { Menu, X, ChevronDown, Plus, LayoutDashboard, LogOut, Briefcase, User, Building2 } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import Button from '@/components/ui/Button';
@@ -11,9 +11,8 @@ import { useAuth } from '@/hooks/useAuth';
 
 const NAV_LINKS = [
   { label: 'Jobs', href: '/jobs' },
-  { label: 'Companies', href: '/#companies' },
-  { label: 'Categories', href: '/#categories' },
-  { label: 'About', href: '/#benefits' },
+  { label: 'Companies', href: '/companies' },
+  { label: 'About', href: '/about' },
 ];
 
 export default function Navbar() {
@@ -152,6 +151,7 @@ export default function Navbar() {
                           {[
                             { href: '/add-job', icon: <Plus size={15} />, label: 'Post a Job' },
                             { href: '/manage-jobs', icon: <LayoutDashboard size={15} />, label: 'Manage Jobs' },
+                            { href: '/manage-companies', icon: <Building2 size={15} />, label: 'Manage Companies' },
                             { href: '/jobs', icon: <Briefcase size={15} />, label: 'Browse Jobs' },
                           ].map((item) => (
                             <Link
@@ -271,6 +271,9 @@ export default function Navbar() {
                     </Link>
                     <Link href="/manage-jobs" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
                       <LayoutDashboard size={16} style={{ color: 'var(--accent)' }} /> Manage Jobs
+                    </Link>
+                    <Link href="/manage-companies" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
+                      <Building2 size={16} style={{ color: 'var(--accent)' }} /> Manage Companies
                     </Link>
                     <button onClick={logout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm w-full" style={{ color: '#ef4444' }}>
                       <LogOut size={16} /> Sign Out

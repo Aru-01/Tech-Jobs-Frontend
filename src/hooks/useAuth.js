@@ -8,10 +8,11 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+
     try {
       const stored = localStorage.getItem('techJobs_user');
       if (stored) setUser(JSON.parse(stored));
-    } catch {}
+    } catch { }
     setIsLoading(false);
   }, []);
 
