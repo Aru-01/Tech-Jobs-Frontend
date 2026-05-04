@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, X, Briefcase, MapPin } from 'lucide-react';
 import JobCard from '@/components/cards/JobCard';
@@ -9,22 +9,48 @@ import Badge from '@/components/ui/Badge';
 const JOB_TYPES = ['All', 'Full-time', 'Part-time', 'Contract'];
 const LOCATIONS = ['All', 'Remote', 'San Francisco, CA', 'New York, NY'];
 
+import { jobsApi } from '@/lib/api';
+
+const JOB_TYPE_MAP = {
+  'All': '',
+  'Full-time': 'full_time',
+  'Part-time': 'part_time',
+  'Contract': 'contract',
+};
+
 export default function JobsPage() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState('All');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [saved, setSaved] = useState(new Set());
 
-  const filtered = useMemo(() => {
-    return JOBS.filter((job) => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || job.title.toLowerCase().includes(q) || job.company.toLowerCase().includes(q) || job.tags.some(t => t.toLowerCase().includes(q));
-      const matchType = selectedType === 'All' || job.type === selectedType;
-      const matchLocation = selectedLocation === 'All' || (selectedLocation === 'Remote' ? job.remote : job.location === selectedLocation);
-      const matchCategory = selectedCategory === 'All' || job.category.toLowerCase().includes(selectedCategory.toLowerCase());
-      return matchSearch && matchType && matchLocation && matchCategory;
-    });
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setLoading(true);
+      try {
+        const params = {};
+        if (search) params.search = search;
+        if (selectedType !== 'All') params.job_type = JOB_TYPE_MAP[selectedType];
+        if (selectedLocation !== 'All') params.location = selectedLocation;
+        
+        const response = await jobsApi.list(params);
+        if (response.success) {
+          setJobs(response.data.results || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch jobs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchJobs();
+    }, 400); // Debounce search
+
+    return () => clearTimeout(timer);
   }, [search, selectedType, selectedLocation, selectedCategory]);
 
   const clearFilters = () => {
@@ -52,7 +78,7 @@ export default function JobsPage() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-semibold"
               style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--accent)', border: '1px solid rgba(99,102,241,0.2)' }}
             >
-              <Briefcase size={12} /> {JOBS.length} jobs available
+              <Briefcase size={12} /> {jobs.length} jobs available
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
               Browse <span className="gradient-text">Tech Jobs</span>
@@ -157,15 +183,21 @@ export default function JobsPage() {
         {/* Results count */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Showing <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{filtered.length}</span> jobs
+            Showing <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{jobs.length}</span> jobs
             {hasFilters && ' matching your filters'}
           </p>
         </div>
 
         {/* Jobs Grid */}
-        {filtered.length > 0 ? (
+        {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filtered.map((job, i) => (
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 rounded-2xl animate-pulse bg-gray-100 dark:bg-gray-800/50" />
+            ))}
+          </div>
+        ) : jobs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {jobs.map((job, i) => (
               <JobCard key={job.id} job={job} index={i} />
             ))}
           </div>

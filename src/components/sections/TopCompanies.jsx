@@ -2,9 +2,29 @@
 import { motion } from 'framer-motion';
 import { Building2 } from 'lucide-react';
 import CompanyCard from '@/components/cards/CompanyCard';
-import { COMPANIES } from '@/lib/mockData';
+import { useState, useEffect } from 'react';
+import { companiesApi } from '@/lib/api';
 
 export default function TopCompanies() {
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await companiesApi.list({ ordering: '-created_at' });
+        if (response.success) {
+          setCompanies(response.data.results?.slice(0, 6) || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch companies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
   return (
     <section className="py-24 relative section-gradient" id="companies">
       {/* Dot pattern overlay */}
@@ -47,9 +67,15 @@ export default function TopCompanies() {
 
         {/* Company Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {COMPANIES.map((company, i) => (
-            <CompanyCard key={company.id} company={company} index={i} />
-          ))}
+          {loading ? (
+            [...Array(6)].map((_, i) => (
+              <div key={i} className="h-48 rounded-2xl animate-pulse bg-gray-100 dark:bg-gray-800/50" />
+            ))
+          ) : (
+            companies.map((company, i) => (
+              <CompanyCard key={company.id} company={company} index={i} />
+            ))
+          )}
         </div>
 
         {/* Trust line */}

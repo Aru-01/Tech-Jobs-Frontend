@@ -1,9 +1,10 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Search, Sparkles, TrendingUp, Users, Briefcase } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { STATS } from '@/lib/mockData';
+import { dashboardApi } from '@/lib/api';
 
 const FloatingShape = ({ className, style, delay = 0 }) => (
   <motion.div
@@ -37,8 +38,38 @@ const TechBadge = ({ label, icon, delay }) => (
 );
 
 export default function HeroSection() {
-  const statIcons = [<Briefcase size={18} />, <Users size={18} />, <TrendingUp size={18} />, <Sparkles size={18} />];
+  const [stats, setStats] = useState({
+    active_jobs: '12,400+',
+    companies_hiring: '3,200+',
+    successful_hires: '10',
+    avg_time_to_hire: '05 days'
+  });
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await dashboardApi.getStats();
+        if (response.success) {
+          setStats({
+            active_jobs: response.data.active_jobs?.toLocaleString() + '+',
+            companies_hiring: response.data.companies_hiring?.toLocaleString() + '+',
+            successful_hires: response.data.successful_hires,
+            avg_time_to_hire: response.data.avg_time_to_hire
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const statData = [
+    { label: 'Active Jobs', value: stats.active_jobs, icon: <Briefcase size={18} /> },
+    { label: 'Companies Hiring', value: stats.companies_hiring, icon: <Users size={18} /> },
+    { label: 'Successful Hires', value: stats.successful_hires, icon: <TrendingUp size={18} /> },
+    { label: 'Avg. Time to Hire', value: stats.avg_time_to_hire, icon: <Sparkles size={18} /> },
+  ];
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden hero-bg pt-20">
       {/* Animated grid background */}
@@ -85,7 +116,7 @@ export default function HeroSection() {
           style={{ color: 'var(--accent)' }}
         >
           <Sparkles size={14} />
-          <span>Over 12,000 tech jobs from 3,200+ top companies</span>
+          <span>Over {stats.active_jobs} tech jobs from {stats.companies_hiring} top companies</span>
           <ArrowRight size={14} />
         </motion.div>
 
@@ -171,7 +202,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto"
         >
-          {STATS.map((stat, i) => (
+          {statData.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -181,9 +212,9 @@ export default function HeroSection() {
               whileHover={{ scale: 1.05, y: -2 }}
             >
               <div className="flex items-center justify-center mb-1" style={{ color: 'var(--accent)' }}>
-                {statIcons[i]}
+                {stat.icon}
               </div>
-              <div className="text-2xl font-bold gradient-text">{stat.value}{stat.suffix}</div>
+              <div className="text-2xl font-bold gradient-text">{stat.value}</div>
               <div className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{stat.label}</div>
             </motion.div>
           ))}

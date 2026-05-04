@@ -11,17 +11,48 @@ import { JOBS } from '@/lib/mockData';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 
-const TYPE_COLORS = { 'Full-time': 'green', 'Part-time': 'amber', 'Contract': 'violet', 'Remote': 'cyan' };
+import { useState, useEffect } from 'react';
+import { jobsApi } from '@/lib/api';
+
+const TYPE_COLORS = { 'full_time': 'green', 'part_time': 'amber', 'contract': 'violet', 'freelance': 'cyan', 'internship': 'indigo' };
 
 export default function JobDetailPage({ params }) {
   const { id } = use(params);
-  const job = JOBS.find((j) => j.id === id);
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const response = await jobsApi.get(id);
+        if (response.success) {
+          setJob(response.data);
+        } else {
+          setJob(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch job:', error);
+        setJob(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJob();
+  }, [id]);
+
+  if (loading) return <div className="min-h-screen pt-32 text-center text-white">Loading job details...</div>;
   if (!job) notFound();
 
-  const typeColor = TYPE_COLORS[job.type] || 'indigo';
+  const type = job.job_type;
+  const typeColor = TYPE_COLORS[type] || 'indigo';
+  const companyName = job.company_details?.company_name || job.company_name || 'Tech Company';
+  const companyLogo = job.company_details?.logo_url || job.company_logo || null;
+  const companyColor = '#6366f1';
 
   // Parse fullDescription into paragraphs/sections
-  const sections = job.fullDescription.split('\n\n');
+  const fullDescription = job.full_description || '';
+  const sections = fullDescription.split('\n\n');
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
@@ -36,7 +67,7 @@ export default function JobDetailPage({ params }) {
         <div className="absolute inset-0 dot-pattern opacity-20" />
         <div
           className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none"
-          style={{ background: `radial-gradient(circle, ${job.companyColor}20, transparent)`, transform: 'translate(30%, -30%)' }}
+          style={{ background: `radial-gradient(circle, ${companyColor}20, transparent)`, transform: 'translate(30%, -30%)' }}
         />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,16 +95,16 @@ export default function JobDetailPage({ params }) {
                 <div
                   className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
                   style={{
-                    background: `${job.companyColor}15`,
-                    border: `2px solid ${job.companyColor}30`,
-                    boxShadow: `0 0 30px ${job.companyColor}20`,
+                    background: `${companyColor}15`,
+                    border: `2px solid ${companyColor}30`,
+                    boxShadow: `0 0 30px ${companyColor}20`,
                   }}
                 >
-                  <img src={job.companyLogo} alt={job.company} className="w-10 h-10 rounded-xl" />
+                  <img src={companyLogo} alt={companyName} className="w-10 h-10 rounded-xl object-cover" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{job.company}</p>
-                  <Badge color={typeColor} dot>{job.type}</Badge>
+                  <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                  <Badge color={typeColor} dot>{type}</Badge>
                 </div>
               </div>
 
@@ -86,9 +117,8 @@ export default function JobDetailPage({ params }) {
                 {[
                   { icon: <MapPin size={15} />, label: job.location, color: 'var(--accent)' },
                   { icon: <DollarSign size={15} />, label: job.salary, color: '#10b981' },
-                  { icon: <Clock size={15} />, label: `Posted ${job.posted}`, color: 'var(--accent-3)' },
+                  { icon: <Clock size={15} />, label: `Posted ${new Date(job.created_at).toLocaleDateString()}`, color: 'var(--accent-3)' },
                   { icon: <Calendar size={15} />, label: `Deadline: ${job.deadline}`, color: '#f59e0b' },
-                  { icon: <Users size={15} />, label: `${job.applicants} applicants`, color: 'var(--muted)' },
                 ].map((m, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--muted)' }}>
                     <span style={{ color: m.color }}>{m.icon}</span>
@@ -125,7 +155,7 @@ export default function JobDetailPage({ params }) {
                   <Globe size={14} style={{ color: 'var(--accent)' }} />
                   <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Company</span>
                 </div>
-                <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{job.company}</p>
+                <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{companyName}</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{job.location}</p>
               </div>
             </motion.div>
@@ -186,7 +216,7 @@ export default function JobDetailPage({ params }) {
             <div className="rounded-2xl p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <h3 className="text-sm font-bold mb-4" style={{ color: 'var(--foreground)' }}>Tech Stack</h3>
               <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag) => (
+                {job.tech_stack?.map((tag) => (
                   <span key={tag} className="tag">{tag}</span>
                 ))}
               </div>
@@ -196,16 +226,14 @@ export default function JobDetailPage({ params }) {
             <div className="rounded-2xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>Job Details</h3>
               {[
-                { label: 'Job Type', value: job.type },
+                { label: 'Job Type', value: type },
                 { label: 'Location', value: job.location },
-                { label: 'Remote', value: job.remote ? 'Yes' : 'On-site' },
-                { label: 'Category', value: job.category },
-                { label: 'Posted', value: job.posted },
+                { label: 'Experience', value: job.experience_level },
                 { label: 'Deadline', value: job.deadline },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-center">
                   <span className="text-xs" style={{ color: 'var(--muted)' }}>{label}</span>
-                  <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>{value}</span>
+                  <span className="text-xs font-semibold capitalize" style={{ color: 'var(--foreground)' }}>{value}</span>
                 </div>
               ))}
             </div>

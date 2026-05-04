@@ -1,21 +1,44 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { LayoutDashboard, Plus, Eye, Trash2, Lock, TrendingUp, Users, Briefcase, Clock, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Plus, Eye, Trash2, Lock, TrendingUp, Users, Briefcase, Clock, ExternalLink, Edit2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MANAGE_JOBS } from '@/lib/mockData';
 import Badge from '@/components/ui/Badge';
 import toast from 'react-hot-toast';
+import { dashboardApi } from '@/lib/api';
 
 const STATUS_COLOR = { active: 'active', paused: 'paused', closed: 'closed' };
 
 export default function ManageJobsPage() {
-  const { isLoggedIn, user, isLoading } = useAuth();
-  const [jobs, setJobs] = useState(MANAGE_JOBS);
+  const { user, loading: authLoading } = useAuth();
+  const isLoggedIn = !!user;
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
 
-  if (isLoading) return null;
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await dashboardApi.myJobs();
+        if (response.success) {
+          setJobs(response.data.results || response.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch jobs', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) {
+      fetchJobs();
+    } else if (!authLoading) {
+      setLoading(false);
+    }
+  }, [user, authLoading]);
+
+  if (authLoading || loading) return null;
 
   if (!isLoggedIn) {
     return (
@@ -52,9 +75,9 @@ export default function ManageJobsPage() {
 
   const stats = [
     { label: 'Total Listings', value: jobs.length, icon: <Briefcase size={18} />, color: '#6366f1' },
-    { label: 'Active', value: jobs.filter(j => j.status === 'active').length, icon: <TrendingUp size={18} />, color: '#10b981' },
-    { label: 'Total Applicants', value: jobs.reduce((s, j) => s + j.applicants, 0), icon: <Users size={18} />, color: '#8b5cf6' },
-    { label: 'Avg. Applicants', value: jobs.length ? Math.round(jobs.reduce((s, j) => s + j.applicants, 0) / jobs.length) : 0, icon: <Clock size={18} />, color: '#f59e0b' },
+    { label: 'Active', value: jobs.length, icon: <TrendingUp size={18} />, color: '#10b981' },
+    { label: 'Total Applicants', value: 0, icon: <Users size={18} />, color: '#8b5cf6' },
+    { label: 'Avg. Applicants', value: 0, icon: <Clock size={18} />, color: '#f59e0b' },
   ];
 
   return (
@@ -159,7 +182,7 @@ export default function ManageJobsPage() {
                           <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{job.title}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm" style={{ color: 'var(--muted)' }}>{job.company}</p>
+                          <p className="text-sm" style={{ color: 'var(--muted)' }}>{job.company_details?.company_name || 'N/A'}</p>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-sm font-medium" style={{ color: '#10b981' }}>{job.salary}</p>
@@ -167,23 +190,35 @@ export default function ManageJobsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1.5">
                             <Users size={13} style={{ color: 'var(--muted)' }} />
-                            <span className="text-sm" style={{ color: 'var(--foreground)' }}>{job.applicants}</span>
+                            <span className="text-sm" style={{ color: 'var(--foreground)' }}>0</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <Badge color={STATUS_COLOR[job.status]} dot>{job.status.charAt(0).toUpperCase() + job.status.slice(1)}</Badge>
+                          {job.is_active ? (
+                            <Badge color="active" dot>Active</Badge>
+                          ) : (
+                            <Badge color="closed" dot>Expired</Badge>
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-xs" style={{ color: 'var(--muted)' }}>{job.created}</p>
+                          <p className="text-xs" style={{ color: 'var(--muted)' }}>{new Date(job.created_at).toLocaleDateString()}</p>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <Link href="/jobs/1">
+                            <Link href={`/jobs/${job.id}`}>
                               <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                                 className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
                                 style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--accent)' }}
                                 title="View">
                                 <Eye size={14} />
+                              </motion.button>
+                            </Link>
+                            <Link href={`/edit-job/${job.id}`}>
+                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+                                style={{ background: 'rgba(139,92,246,0.1)', color: 'var(--accent-2)' }}
+                                title="Edit">
+                                <Edit2 size={14} />
                               </motion.button>
                             </Link>
                             <motion.button

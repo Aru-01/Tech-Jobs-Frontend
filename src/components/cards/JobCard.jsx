@@ -12,7 +12,17 @@ const TYPE_COLORS = {
 };
 
 export default function JobCard({ job, index = 0, compact = false }) {
-  const typeColor = TYPE_COLORS[job.type] || 'indigo';
+  const title = job.title;
+  const companyName = job.company_details?.company_name || job.company_name || 'N/A';
+  const companyLogo = job.company_details?.logo_url || job.company_logo || job.companyLogo;
+  const location = job.location;
+  const salary = job.salary;
+  const type = job.job_type || job.type;
+  const tags = job.tech_stack || job.tags || [];
+  const description = job.short_description || job.description;
+  const posted = job.created_at ? new Date(job.created_at).toLocaleDateString() : job.posted;
+
+  const typeColor = TYPE_COLORS[type] || 'indigo';
 
   return (
     <motion.div
@@ -23,8 +33,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
     >
       <Link href={`/jobs/${job.id}`} className="block group">
         <div
-          className="glass-card p-6 rounded-2xl flex flex-col h-full relative overflow-hidden cursor-pointer"
-          style={{ minHeight: compact ? 'auto' : '260px' }}
+          className="glass-card p-6 rounded-2xl flex flex-col h-full relative overflow-hidden cursor-pointer card-uniform"
         >
           {/* Featured glow */}
           {job.featured && (
@@ -46,19 +55,19 @@ export default function JobCard({ job, index = 0, compact = false }) {
                 }}
               >
                 <img
-                  src={job.companyLogo}
-                  alt={job.company}
+                  src={companyLogo}
+                  alt={companyName}
                   className="w-8 h-8 rounded-lg object-cover"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               </div>
               <div>
-                <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{job.company}</p>
+                <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
                 <h3
                   className="text-base font-bold leading-tight group-hover:text-[--accent] transition-colors"
                   style={{ color: 'var(--foreground)' }}
                 >
-                  {job.title}
+                  {title}
                 </h3>
               </div>
             </div>
@@ -82,31 +91,31 @@ export default function JobCard({ job, index = 0, compact = false }) {
           {/* Description */}
           {!compact && (
             <p className="text-sm leading-relaxed mb-4 line-clamp-2 flex-1" style={{ color: 'var(--muted)' }}>
-              {job.description}
+              {description}
             </p>
           )}
 
           {/* Meta */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4">
             <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
-              <MapPin size={12} style={{ color: 'var(--accent)' }} /> {job.location}
+              <MapPin size={12} style={{ color: 'var(--accent)' }} /> {location}
             </span>
             <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
-              <DollarSign size={12} style={{ color: '#10b981' }} /> {job.salary}
+              <DollarSign size={12} style={{ color: '#10b981' }} /> {salary}
             </span>
             <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
-              <Clock size={12} style={{ color: 'var(--accent-3)' }} /> {job.posted}
+              <Clock size={12} style={{ color: 'var(--accent-3)' }} /> {posted}
             </span>
           </div>
 
           {/* Tags + Type */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex flex-wrap gap-1.5">
-              {job.tags.slice(0, 3).map((tag) => (
+              {tags.slice(0, 3).map((tag) => (
                 <span key={tag} className="tag text-[10px]">{tag}</span>
               ))}
             </div>
-            <Badge color={typeColor} dot>{job.type}</Badge>
+            <Badge color={typeColor} dot>{type}</Badge>
           </div>
 
           {/* Hover overlay line */}

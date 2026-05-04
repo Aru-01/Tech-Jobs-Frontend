@@ -3,11 +3,32 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import JobCard from '@/components/cards/JobCard';
-import { JOBS } from '@/lib/mockData';
+import { useState, useEffect } from 'react';
+import { jobsApi } from '@/lib/api';
 import Button from '@/components/ui/Button';
 
 export default function FeaturedJobs() {
-  const featured = JOBS.filter((j) => j.featured).slice(0, 6);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await jobsApi.list({ ordering: '-created_at' });
+        if (response.success) {
+          // In a real scenario, the backend might have a 'featured' flag.
+          // For now, we'll just take the top 6.
+          setJobs(response.data.results?.slice(0, 6) || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch jobs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   return (
     <section className="py-24 relative" id="featured-jobs">
@@ -48,9 +69,16 @@ export default function FeaturedJobs() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
-          {featured.map((job, i) => (
-            <JobCard key={job.id} job={job} index={i} />
-          ))}
+          {loading ? (
+            // Simple loading skeletons
+            [...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 rounded-2xl animate-pulse bg-gray-100 dark:bg-gray-800/50" />
+            ))
+          ) : (
+            jobs.map((job, i) => (
+              <JobCard key={job.id} job={job} index={i} />
+            ))
+          )}
         </div>
 
         {/* CTA */}
@@ -63,7 +91,7 @@ export default function FeaturedJobs() {
         >
           <Link href="/jobs">
             <Button variant="outline" size="lg" iconRight={<ArrowRight size={16} />}>
-              View All 12,400+ Jobs
+              Browse All Opportunities
             </Button>
           </Link>
         </motion.div>

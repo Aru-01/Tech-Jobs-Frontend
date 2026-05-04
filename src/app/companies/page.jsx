@@ -1,23 +1,44 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Building2, TrendingUp, Users } from 'lucide-react';
-import { COMPANIES } from '@/lib/mockData';
 import CompanyCard from '@/components/cards/CompanyCard';
 import Button from '@/components/ui/Button';
+import { companiesApi } from '@/lib/api';
 
 export default function CompaniesPage() {
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [industry, setIndustry] = useState('All');
 
-  const industries = ['All', ...new Set(COMPANIES.map(c => c.industry))];
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setLoading(true);
+      try {
+        const params = {};
+        if (search) params.search = search;
+        // In the backend, industry might be a filter field if implemented
+        
+        const response = await companiesApi.list(params);
+        if (response.success) {
+          setCompanies(response.data.results || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch companies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredCompanies = COMPANIES.filter(company => {
-    const matchesSearch = company.name.toLowerCase().includes(search.toLowerCase()) ||
-                         company.description.toLowerCase().includes(search.toLowerCase());
-    const matchesIndustry = industry === 'All' || company.industry === industry;
-    return matchesSearch && matchesIndustry;
-  });
+    const timer = setTimeout(() => {
+      fetchCompanies();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const industries = ['All', 'Technology', 'Fintech', 'Healthcare', 'E-commerce']; // Standardized for now
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -87,8 +108,12 @@ export default function CompaniesPage() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredCompanies.length > 0 ? (
-          filteredCompanies.map((company, i) => (
+        {loading ? (
+          [...Array(6)].map((_, i) => (
+            <div key={i} className="h-48 rounded-2xl animate-pulse bg-gray-100 dark:bg-gray-800/50" />
+          ))
+        ) : companies.length > 0 ? (
+          companies.map((company, i) => (
             <CompanyCard key={company.id} company={company} index={i} />
           ))
         ) : (

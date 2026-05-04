@@ -20,7 +20,8 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const isLoggedIn = !!user;
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -149,11 +150,12 @@ export default function Navbar() {
                         {/* Menu Items */}
                         <div className="py-1.5">
                           {[
-                            { href: '/add-job', icon: <Plus size={15} />, label: 'Post a Job' },
-                            { href: '/manage-jobs', icon: <LayoutDashboard size={15} />, label: 'Manage Jobs' },
-                            { href: '/manage-companies', icon: <Building2 size={15} />, label: 'Manage Companies' },
-                            { href: '/jobs', icon: <Briefcase size={15} />, label: 'Browse Jobs' },
-                          ].map((item) => (
+                            { href: '/profile', icon: <User size={15} />, label: 'My Profile', roles: ['job_seeker', 'recruiter', 'admin'] },
+                            { href: '/add-job', icon: <Plus size={15} />, label: 'Post a Job', roles: ['recruiter', 'admin'] },
+                            { href: '/manage-jobs', icon: <LayoutDashboard size={15} />, label: 'Manage Jobs', roles: ['recruiter', 'admin'] },
+                            { href: '/manage-companies', icon: <Building2 size={15} />, label: 'Manage Companies', roles: ['recruiter', 'admin'] },
+                            { href: '/jobs', icon: <Briefcase size={15} />, label: 'Browse Jobs', public: true },
+                          ].filter(item => item.public || (user && item.roles?.includes(user.role))).map((item) => (
                             <Link
                               key={item.href}
                               href={item.href}
@@ -259,22 +261,23 @@ export default function Navbar() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-3 px-4 py-2">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-                        {user?.avatar || 'U'}
+                        {user?.avatar || user?.name?.[0] || 'U'}
                       </div>
                       <div>
                         <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{user?.name}</p>
                         <p className="text-xs" style={{ color: 'var(--muted)' }}>{user?.email}</p>
                       </div>
                     </div>
-                    <Link href="/add-job" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
-                      <Plus size={16} style={{ color: 'var(--accent)' }} /> Post a Job
-                    </Link>
-                    <Link href="/manage-jobs" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
-                      <LayoutDashboard size={16} style={{ color: 'var(--accent)' }} /> Manage Jobs
-                    </Link>
-                    <Link href="/manage-companies" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
-                      <Building2 size={16} style={{ color: 'var(--accent)' }} /> Manage Companies
-                    </Link>
+                    {[
+                      { href: '/jobs', icon: <Briefcase size={16} />, label: 'Browse Jobs', public: true },
+                      { href: '/add-job', icon: <Plus size={16} />, label: 'Post a Job', roles: ['recruiter', 'admin'] },
+                      { href: '/manage-jobs', icon: <LayoutDashboard size={16} />, label: 'Manage Jobs', roles: ['recruiter', 'admin'] },
+                      { href: '/manage-companies', icon: <Building2 size={16} />, label: 'Manage Companies', roles: ['recruiter', 'admin'] },
+                    ].filter(item => item.public || (user && item.roles?.includes(user.role))).map(item => (
+                      <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
+                        <span style={{ color: 'var(--accent)' }}>{item.icon}</span> {item.label}
+                      </Link>
+                    ))}
                     <button onClick={logout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm w-full" style={{ color: '#ef4444' }}>
                       <LogOut size={16} /> Sign Out
                     </button>

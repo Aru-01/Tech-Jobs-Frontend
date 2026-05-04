@@ -7,6 +7,8 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, Chrome, CheckCircle, Sparkles } fr
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/ui/Logo';
 import toast from 'react-hot-toast';
+import { useGoogleLogin } from '@react-oauth/google';
+import { authApi } from '@/lib/api';
 
 const PERKS = [
   'Access 12,000+ premium tech roles',
@@ -21,8 +23,33 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, refreshProfile } = useAuth();
   const router = useRouter();
+
+  const googleLogin = useGoogleLogin({
+    flow: 'auth-code',
+    onSuccess: async (codeResponse) => {
+      setLoading(true);
+      try {
+        const response = await authApi.googleAuth({ code: codeResponse.code });
+        const token = response.data?.access || response.data?.access_token;
+        if (response.success && token) {
+          localStorage.setItem('access_token', token);
+          await refreshProfile(token);
+          toast.success('Google login successful! 🚀');
+          router.push('/');
+        } else {
+          toast.error(response.message || 'Google authentication failed.');
+        }
+      } catch (err) {
+        console.error('Google login error:', err);
+        toast.error('Failed to authenticate with Google.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => toast.error('Google login failed.')
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,18 +58,20 @@ export default function LoginPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    login({ name: 'Alex Johnson', email, avatar: 'AJ', role: 'recruiter' });
-    toast.success('Welcome back!');
-    router.push('/');
-  };
-
-  const handleGoogle = async () => {
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    login({ name: 'Alex Johnson', email: 'alex@gmail.com', avatar: 'AJ', role: 'recruiter' });
-    toast.success('Signed in with Google!');
-    router.push('/');
+    try {
+      const response = await login({ email, password });
+      if (response.success) {
+        toast.success('Welcome back!');
+        router.push('/');
+      } else {
+        const errorMsg = response.message || 'Login failed. Please check your credentials.';
+        toast.error(errorMsg);
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle = {
@@ -127,7 +156,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <motion.button onClick={handleGoogle} disabled={loading} whileHover={{ scale: 1.02, y: -1 }}
+          <motion.button onClick={() => googleLogin()} disabled={loading} whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl mb-6 text-sm font-semibold transition-all cursor-pointer"
             style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>

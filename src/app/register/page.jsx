@@ -7,6 +7,8 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Chrome, CheckCircle } from '
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/ui/Logo';
 import toast from 'react-hot-toast';
+import { useGoogleLogin } from '@react-oauth/google';
+import { authApi } from '@/lib/api';
 
 function getStrength(pw) {
   let s = 0;
@@ -25,21 +27,68 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [role, setRole] = useState('job_seeker');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { register, refreshProfile } = useAuth();
   const router = useRouter();
   const strength = useMemo(() => getStrength(password), [password]);
 
+  const googleLogin = useGoogleLogin({
+    flow: 'auth-code',
+    onSuccess: async (codeResponse) => {
+      setLoading(true);
+      try {
+        const response = await authApi.googleAuth({ code: codeResponse.code });
+        const token = response.data?.access || response.data?.access_token;
+        if (response.success && token) {
+          localStorage.setItem('access_token', token);
+          await refreshProfile(token);
+          toast.success('Google login successful! 🚀');
+          router.push('/');
+        } else {
+          toast.error(response.message || 'Google authentication failed.');
+        }
+      } catch (err) {
+        console.error('Google registration error:', err);
+        toast.error('Failed to authenticate with Google.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => toast.error('Google login failed.')
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) { toast.error('Please fill all fields.'); return; }
-    if (strength < 2) { toast.error('Please choose a stronger password.'); return; }
+    if (!name || !email || !password) {
+      toast.error('Please fill in all fields.');
+      return;
+    }
+    if (strength < 2) {
+      toast.error('Please choose a stronger password.');
+      return;
+    }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    login({ name, email, avatar: initials, role: 'recruiter' });
-    toast.success(`Welcome to Tech_Jobs, ${name.split(' ')[0]}! 🚀`);
-    router.push('/');
+    try {
+      const response = await register({
+        full_name: name,
+        email,
+        password,
+        role
+      });
+
+      if (response.success) {
+        toast.success(`Welcome to Tech_Jobs, ${name.split(' ')[0]}! 🚀`);
+        router.push('/');
+      } else {
+        const errorMsg = response.message || 'Registration failed.';
+        toast.error(errorMsg);
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle = { background: 'var(--surface-2)', border: '1px solid var(--border)' };
@@ -96,7 +145,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Google */}
-          <motion.button whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}
+          <motion.button onClick={() => googleLogin()} whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.98 }}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl mb-6 text-sm font-semibold cursor-pointer"
             style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}>
             <Chrome size={18} style={{ color: '#4285f4' }} />
@@ -119,6 +168,32 @@ export default function RegisterPage() {
                   placeholder="Alex Johnson"
                   className="flex-1 bg-transparent text-sm outline-none" style={{ color: 'var(--foreground)' }} />
               </div>
+            </div>
+
+            {/* Role Selection */}
+            <div className="flex gap-4 mb-2">
+              <button
+                type="button"
+                onClick={() => setRole('job_seeker')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  role === 'job_seeker'
+                    ? 'bg-[var(--accent)] text-white shadow-lg shadow-indigo-500/30'
+                    : 'bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)]'
+                }`}
+              >
+                Job Seeker
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('recruiter')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  role === 'recruiter'
+                    ? 'bg-[var(--accent)] text-white shadow-lg shadow-indigo-500/30'
+                    : 'bg-[var(--surface-2)] text-[var(--muted)] border border-[var(--border)]'
+                }`}
+              >
+                Recruiter
+              </button>
             </div>
 
             {/* Email */}
