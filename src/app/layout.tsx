@@ -14,6 +14,9 @@ export const metadata = {
   title: 'Tech_Jobs — Premium Tech Job Board for Developers',
   description: 'Find your dream tech job at the world\'s most innovative companies. 12,000+ curated software engineering, AI/ML, DevOps, and design roles. Salary transparency, remote-first.',
   keywords: 'tech jobs, software engineer jobs, developer jobs, remote tech jobs, AI ML jobs, DevOps jobs, frontend jobs, backend jobs',
+  icons: {
+    icon: '/favicon.png',
+  },
   openGraph: {
     title: 'Tech_Jobs — Premium Tech Job Board',
     description: 'Find your dream tech job at world-class companies. Curated roles, salary transparency, remote-first.',

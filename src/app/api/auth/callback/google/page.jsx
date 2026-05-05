@@ -1,12 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshProfile } = useAuth();
@@ -25,9 +25,7 @@ export default function GoogleCallbackPage() {
 
   const handleCallback = async (code) => {
     try {
-      console.log('Sending code to backend:', code);
       const response = await authApi.googleAuth({ code });
-      console.log('Backend response:', response);
       
       if (response.success && response.data?.access) {
         localStorage.setItem('access_token', response.data.access);
@@ -40,7 +38,6 @@ export default function GoogleCallbackPage() {
         toast.error(msg);
       }
     } catch (err) {
-      console.error('Google callback error:', err);
       const msg = err.response?.data?.message || 'An unexpected error occurred during authentication.';
       setError(msg);
       toast.error(msg);
@@ -68,5 +65,17 @@ export default function GoogleCallbackPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={32} />
+      </div>
+    }>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }
