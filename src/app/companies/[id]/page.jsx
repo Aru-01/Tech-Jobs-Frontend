@@ -11,6 +11,7 @@ import JobCard from '@/components/cards/JobCard';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import { companiesApi, jobsApi } from '@/lib/api';
+import { getMediaUrl } from '@/lib/utils';
 
 export default function CompanyDetailPage() {
   const { id } = useParams();
@@ -80,8 +81,8 @@ export default function CompanyDetailPage() {
                 className="w-full h-full rounded-2xl flex items-center justify-center text-white text-4xl font-bold overflow-hidden"
                 style={{ background: '#6366f1' }}
               >
-                {company.logo_url ? (
-                  <img src={company.logo_url} alt={company.company_name} className="w-full h-full object-cover" />
+                {company.logo || company.logo_url ? (
+                  <img src={getMediaUrl(company.logo || company.logo_url)} alt={company.company_name} className="w-full h-full object-cover" />
                 ) : (
                   company.company_name?.[0] || 'C'
                 )}
@@ -95,7 +96,7 @@ export default function CompanyDetailPage() {
                 className="flex items-center justify-center md:justify-start gap-3 mb-2"
               >
                 <h1 className="text-4xl sm:text-5xl font-bold" style={{ color: 'var(--foreground)' }}>{company.company_name}</h1>
-                <CheckCircle2 size={24} className="text-accent" />
+                {company.is_verified && <CheckCircle2 size={24} className="text-blue-500" title="Verified Company" />}
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

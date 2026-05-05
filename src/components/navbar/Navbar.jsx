@@ -3,11 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Plus, LayoutDashboard, LogOut, Briefcase, User, Building2 } from 'lucide-react';
+import { Menu, X, ChevronDown, Plus, LayoutDashboard, LogOut, Briefcase, User, Building2, Shield } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import Button from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
+import { getMediaUrl } from '@/lib/utils';
 
 const NAV_LINKS = [
   { label: 'Jobs', href: '/jobs' },
@@ -109,10 +110,18 @@ export default function Navbar() {
                     }}
                   >
                     <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold overflow-hidden"
                       style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
                     >
-                      {user?.avatar || user?.name?.[0] || 'U'}
+                      {user?.profile_image_url || user?.profile_image ? (
+                        <img 
+                          src={getMediaUrl(user.profile_image_url || user.profile_image)} 
+                          alt={user.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user?.avatar || user?.name?.[0] || 'U'
+                      )}
                     </div>
                     <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                       {user?.name?.split(' ')[0]}
@@ -154,6 +163,7 @@ export default function Navbar() {
                             { href: '/add-job', icon: <Plus size={15} />, label: 'Post a Job', roles: ['recruiter', 'admin'] },
                             { href: '/manage-jobs', icon: <LayoutDashboard size={15} />, label: 'Manage Jobs', roles: ['recruiter', 'admin'] },
                             { href: '/manage-companies', icon: <Building2 size={15} />, label: 'Manage Companies', roles: ['recruiter', 'admin'] },
+                            { href: '/admin-users', icon: <Shield size={15} />, label: 'Admin Panel', roles: ['admin'] },
                             { href: '/jobs', icon: <Briefcase size={15} />, label: 'Browse Jobs', public: true },
                           ].filter(item => item.public || (user && item.roles?.includes(user.role))).map((item) => (
                             <Link
@@ -273,6 +283,7 @@ export default function Navbar() {
                       { href: '/add-job', icon: <Plus size={16} />, label: 'Post a Job', roles: ['recruiter', 'admin'] },
                       { href: '/manage-jobs', icon: <LayoutDashboard size={16} />, label: 'Manage Jobs', roles: ['recruiter', 'admin'] },
                       { href: '/manage-companies', icon: <Building2 size={16} />, label: 'Manage Companies', roles: ['recruiter', 'admin'] },
+                      { href: '/admin-users', icon: <Shield size={16} />, label: 'Admin Panel', roles: ['admin'] },
                     ].filter(item => item.public || (user && item.roles?.includes(user.role))).map(item => (
                       <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm" style={{ color: 'var(--foreground)' }}>
                         <span style={{ color: 'var(--accent)' }}>{item.icon}</span> {item.label}

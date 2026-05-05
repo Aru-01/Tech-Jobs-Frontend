@@ -1,27 +1,25 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/lib/api';
 import Button from '@/components/ui/Button';
-import { User, Mail, Link as LinkIcon, Camera, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Camera, Save, Loader2, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const { user, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef(null);
   
-  const [formData, setFormData] = useState({
-    full_name: '',
-    profile_image_url: '',
-  });
+  const [formData, setFormData] = useState({ full_name: '' });
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        full_name: user.name || user.full_name || '',
-        profile_image_url: user.profile_image_url || user.profile_image || '',
-      });
+      setFormData({ full_name: user.name || user.full_name || '' });
+      setImagePreview(user.profile_image_url || user.profile_image || '');
     }
   }, [user]);
 
@@ -29,13 +27,35 @@ export default function ProfilePage() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await authApi.updateProfile(formData);
-      if (res.success || res.full_name) { // sometimes dj-rest-auth returns the user obj directly if custom renderer isn't applied
+      let payload;
+      if (imageFile) {
+        // File upload: use FormData
+        payload = new FormData();
+        payload.append('full_name', formData.full_name);
+        payload.append('profile_image', imageFile);
+      } else {
+        // JSON update
+        payload = { full_name: formData.full_name };
+      }
+      const res = await authApi.updateProfile(payload);
+      if (res.success) {
         toast.success('Profile updated successfully!');
+        setImageFile(null);
         await refreshProfile();
       } else {
         toast.error(res.message || 'Failed to update profile');
@@ -65,24 +85,41 @@ export default function ProfilePage() {
         <div className="absolute top-0 left-0 w-full h-32" style={{ background: 'linear-gradient(to right, #6366f1, #8b5cf6)', opacity: 0.8 }} />
         
         <div className="relative z-10 flex flex-col sm:flex-row gap-8 items-start sm:items-end mt-12 mb-10">
+          {/* Avatar with upload */}
           <div className="relative group">
             <div className="w-32 h-32 rounded-full overflow-hidden border-4" style={{ borderColor: 'var(--surface)', background: 'var(--surface-2)' }}>
-              {formData.profile_image_url ? (
-                <img src={formData.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              {imagePreview ? (
+                <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-4xl font-bold" style={{ color: 'var(--muted)' }}>
                   {formData.full_name?.[0] || 'U'}
                 </div>
               )}
             </div>
-            {/* The camera overlay is just visual since we use URL input for now */}
-            <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Camera className="text-white" size={24} />
-            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 cursor-pointer"
+            >
+              <Camera className="text-white" size={20} />
+              <span className="text-white text-xs font-semibold">Change</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
           </div>
           <div className="flex-1 pb-2">
-            <h1 className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{user.name}</h1>
+            <h1 className="text-3xl font-bold mb-1" style={{ color: 'var(--foreground)' }}>{user.name || user.full_name}</h1>
             <p className="text-sm uppercase tracking-wider font-semibold" style={{ color: 'var(--accent)' }}>{user.role?.replace('_', ' ')}</p>
+            {imageFile && (
+              <p className="text-xs mt-2 flex items-center gap-1" style={{ color: '#10b981' }}>
+                <Upload size={12} /> {imageFile.name} selected
+              </p>
+            )}
           </div>
         </div>
 
@@ -116,23 +153,6 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Profile Image URL</label>
-            <div className="relative">
-              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--muted)' }} />
-              <input
-                type="url"
-                name="profile_image_url"
-                value={formData.profile_image_url}
-                onChange={handleChange}
-                placeholder="https://example.com/avatar.jpg"
-                className="w-full pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-all"
-                style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)' }}
-              />
-            </div>
-            <p className="text-xs mt-2" style={{ color: 'var(--muted)' }}>Provide a URL to your avatar image.</p>
           </div>
 
           <div className="flex justify-end pt-4">

@@ -78,8 +78,8 @@ export default function JobCategories() {
           </motion.p>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Categories Grid - 3 cols so alternating pattern groups of 3 align */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {displayed.map((cat, i) => (
             <CategoryCard key={cat.id} category={cat} index={i} />
           ))}

@@ -1,8 +1,9 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { MapPin, DollarSign, Clock, Bookmark, ArrowRight, Building2 } from 'lucide-react';
+import { MapPin, DollarSign, Clock, Bookmark, ArrowRight, Building2, ShieldCheck, Check } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
+import { getMediaUrl } from '@/lib/utils';
 
 const TYPE_COLORS = {
   'Full-time': 'green',
@@ -18,7 +19,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
   const location = job.location;
   const salary = job.salary;
   const type = job.job_type || job.type;
-  const tags = job.tech_stack || job.tags || [];
+  const tags = Array.isArray(job.tech_stack) ? job.tech_stack : (typeof job.tech_stack === 'string' ? job.tech_stack.split(',').filter(t => t) : []);
   const description = job.short_description || job.description;
   const posted = job.created_at ? new Date(job.created_at).toLocaleDateString() : job.posted;
 
@@ -54,15 +55,30 @@ export default function JobCard({ job, index = 0, compact = false }) {
                   border: `1px solid ${job.companyColor}30`,
                 }}
               >
-                <img
-                  src={companyLogo}
-                  alt={companyName}
-                  className="w-8 h-8 rounded-lg object-cover"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
+                {companyLogo ? (
+                  <img
+                    src={getMediaUrl(companyLogo)}
+                    alt={companyName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div 
+                    className="w-full h-full items-center justify-center font-bold text-lg"
+                    style={{ display: 'flex', color: 'var(--accent)' }}
+                  >
+                    {companyName?.[0] || 'J'}
+                  </div>
+                )}
               </div>
               <div>
-                <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                  {job.company_details?.is_verified && (
+                    <div className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-blue-500 text-white shadow-sm">
+                      <Check size={10} strokeWidth={4} />
+                    </div>
+                  )}
+                </div>
                 <h3
                   className="text-base font-bold leading-tight group-hover:text-[--accent] transition-colors"
                   style={{ color: 'var(--foreground)' }}
@@ -90,9 +106,14 @@ export default function JobCard({ job, index = 0, compact = false }) {
 
           {/* Description */}
           {!compact && (
-            <p className="text-sm leading-relaxed mb-4 line-clamp-2 flex-1" style={{ color: 'var(--muted)' }}>
-              {description}
-            </p>
+            <div className="flex-1 overflow-hidden mb-4">
+              <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'var(--muted)' }}>
+                {description}
+              </p>
+              {description?.length > 100 && (
+                <span className="text-[10px] font-bold text-accent mt-1 inline-block">Read More...</span>
+              )}
+            </div>
           )}
 
           {/* Meta */}
@@ -101,7 +122,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
               <MapPin size={12} style={{ color: 'var(--accent)' }} /> {location}
             </span>
             <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
-              <DollarSign size={12} style={{ color: '#10b981' }} /> {salary}
+              <span className="text-[14px]" style={{ color: '#10b981' }}>৳</span> {salary}
             </span>
             <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
               <Clock size={12} style={{ color: 'var(--accent-3)' }} /> {posted}

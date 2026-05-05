@@ -150,8 +150,8 @@ export default function EditJobPage() {
                   <input className={inputCls} style={inputStyle} value={form.title} onChange={set('title')} />
                 </FIELD>
               </div>
-              <FIELD label="Salary Range" icon={<DollarSign size={13} />} required>
-                <input className={inputCls} style={inputStyle} value={form.salary} onChange={set('salary')} />
+              <FIELD label="Salary Range (BDT)" icon={<span>৳</span>} required>
+                <input type="number" className={inputCls} style={inputStyle} value={form.salary} onChange={set('salary')} placeholder="e.g. 80000" />
               </FIELD>
               <FIELD label="Job Type" icon={<Briefcase size={13} />} required>
                 <select className={inputCls} style={inputStyle} value={form.type} onChange={set('type')}>

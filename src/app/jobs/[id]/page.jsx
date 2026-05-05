@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, DollarSign, Clock, Calendar, Bookmark,
-  Share2, Briefcase, Users, CheckCircle, ExternalLink, Globe
+  Share2, Briefcase, Users, CheckCircle, ExternalLink, Globe, Check
 } from 'lucide-react';
 import { JOBS } from '@/lib/mockData';
 import Badge from '@/components/ui/Badge';
@@ -13,6 +13,8 @@ import Button from '@/components/ui/Button';
 
 import { useState, useEffect } from 'react';
 import { jobsApi } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { getMediaUrl } from '@/lib/utils';
 
 const TYPE_COLORS = { 'full_time': 'green', 'part_time': 'amber', 'contract': 'violet', 'freelance': 'cyan', 'internship': 'indigo' };
 
@@ -92,18 +94,24 @@ export default function JobDetailPage({ params }) {
             >
               <div className="flex items-center gap-4 mb-5">
                 {/* Company logo */}
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-                  style={{
-                    background: `${companyColor}15`,
-                    border: `2px solid ${companyColor}30`,
-                    boxShadow: `0 0 30px ${companyColor}20`,
-                  }}
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  style={{ background: `${companyColor}15`, border: `2px solid ${companyColor}30`, boxShadow: `0 0 30px ${companyColor}20` }}
                 >
-                  <img src={companyLogo} alt={companyName} className="w-10 h-10 rounded-xl object-cover" />
+                  {companyLogo ? (
+                    <img src={getMediaUrl(companyLogo)} alt={companyName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xl font-bold" style={{ color: companyColor }}>{companyName[0]}</span>
+                  )}
                 </div>
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                    {job.company_details?.is_verified && (
+                      <div className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white shadow-sm">
+                        <Check size={11} strokeWidth={4} />
+                      </div>
+                    )}
+                  </div>
                   <Badge color={typeColor} dot>{type}</Badge>
                 </div>
               </div>
@@ -116,9 +124,9 @@ export default function JobDetailPage({ params }) {
               <div className="flex flex-wrap gap-4">
                 {[
                   { icon: <MapPin size={15} />, label: job.location, color: 'var(--accent)' },
-                  { icon: <DollarSign size={15} />, label: job.salary, color: '#10b981' },
+                  { icon: <span className="text-base font-bold">৳</span>, label: job.salary, color: '#10b981' },
                   { icon: <Clock size={15} />, label: `Posted ${new Date(job.created_at).toLocaleDateString()}`, color: 'var(--accent-3)' },
-                  { icon: <Calendar size={15} />, label: `Deadline: ${job.deadline}`, color: '#f59e0b' },
+                  { icon: <Calendar size={15} />, label: `Deadline: ${job.deadline || 'No Deadline'}`, color: '#f59e0b' },
                 ].map((m, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--muted)' }}>
                     <span style={{ color: m.color }}>{m.icon}</span>
@@ -135,17 +143,26 @@ export default function JobDetailPage({ params }) {
               transition={{ delay: 0.15 }}
               className="lg:w-72 glass-card rounded-2xl p-6"
             >
-              <div className="text-2xl font-bold mb-1 gradient-text">{job.salary}</div>
-              <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>Annual salary range</p>
+              <div className="text-2xl font-bold mb-1 gradient-text"><span className="text-xl">৳</span> {job.salary}</div>
+              <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>Salary range</p>
 
               <div className="space-y-3">
-                <Button variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}>
+                <Button
+                  variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}
+                  onClick={() => toast('🚀 Applications coming soon! This service will be available shortly.', { icon: '⏳', duration: 4000 })}
+                >
                   Apply Now
                 </Button>
-                <Button variant="secondary" size="md" fullWidth icon={<Bookmark size={15} />}>
+                <Button
+                  variant="secondary" size="md" fullWidth icon={<Bookmark size={15} />}
+                  onClick={() => toast('Saved! Job bookmarking coming soon.', { icon: '🔖' })}
+                >
                   Save Job
                 </Button>
-                <Button variant="ghost" size="md" fullWidth icon={<Share2 size={15} />}>
+                <Button
+                  variant="ghost" size="md" fullWidth icon={<Share2 size={15} />}
+                  onClick={() => { navigator.clipboard?.writeText(window.location.href); toast.success('Link copied to clipboard!'); }}
+                >
                   Share
                 </Button>
               </div>
@@ -216,7 +233,7 @@ export default function JobDetailPage({ params }) {
             <div className="rounded-2xl p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <h3 className="text-sm font-bold mb-4" style={{ color: 'var(--foreground)' }}>Tech Stack</h3>
               <div className="flex flex-wrap gap-2">
-                {job.tech_stack?.map((tag) => (
+                {(Array.isArray(job.tech_stack) ? job.tech_stack : (typeof job.tech_stack === 'string' ? job.tech_stack.split(',').filter(t => t) : [])).map((tag) => (
                   <span key={tag} className="tag">{tag}</span>
                 ))}
               </div>
@@ -236,11 +253,19 @@ export default function JobDetailPage({ params }) {
                   <span className="text-xs font-semibold capitalize" style={{ color: 'var(--foreground)' }}>{value}</span>
                 </div>
               ))}
+                <div className="flex flex-col">
+                  <span className="text-xs" style={{ color: 'var(--muted)' }}>Salary Range</span>
+                  <span className="text-base font-bold flex items-center gap-1" style={{ color: '#10b981' }}>
+                    <span className="text-lg">৳</span> {job.salary}
+                  </span>
+                </div>
             </div>
 
-            {/* Apply card mobile */}
             <div className="lg:hidden rounded-2xl p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <Button variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}>Apply Now</Button>
+              <Button
+                variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}
+                onClick={() => toast('🚀 Applications coming soon! This service will be available shortly.', { icon: '⏳', duration: 4000 })}
+              >Apply Now</Button>
             </div>
           </motion.div>
         </div>

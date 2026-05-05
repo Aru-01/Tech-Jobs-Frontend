@@ -52,7 +52,11 @@ export const authApi = {
   updateProfile: (data: any) => {
     const isFormData = data instanceof FormData;
     const headers: any = {};
-    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (isFormData) {
+      headers['Content-Type'] = undefined;
+    } else {
+      headers['Content-Type'] = 'application/json';
+    }
     return axiosInstance.patch<any, GlobalResponse<User>>('/api/auth/profile/', data, { headers });
   },
   googleAuth: (data: any) => axiosInstance.post<any, GlobalResponse<any>>('/api/auth/google/', data),
@@ -65,13 +69,21 @@ export const jobsApi = {
   create: (data: any) => {
     const isFormData = data instanceof FormData;
     const headers: any = {};
-    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (isFormData) {
+      headers['Content-Type'] = undefined;
+    } else {
+      headers['Content-Type'] = 'application/json';
+    }
     return axiosInstance.post<any, GlobalResponse<Job>>('/api/jobs/', data, { headers });
   },
   update: (id: number, data: any) => {
     const isFormData = data instanceof FormData;
     const headers: any = {};
-    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (isFormData) {
+      headers['Content-Type'] = undefined;
+    } else {
+      headers['Content-Type'] = 'application/json';
+    }
     return axiosInstance.patch<any, GlobalResponse<Job>>(`/api/jobs/${id}/`, data, { headers });
   },
   delete: (id: number) => axiosInstance.delete(`/api/jobs/${id}/`),
@@ -84,13 +96,21 @@ export const companiesApi = {
   create: (data: any) => {
     const isFormData = data instanceof FormData;
     const headers: any = {};
-    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (isFormData) {
+      headers['Content-Type'] = undefined;
+    } else {
+      headers['Content-Type'] = 'application/json';
+    }
     return axiosInstance.post<any, GlobalResponse<Company>>('/api/companies/', data, { headers });
   },
   update: (id: number, data: any) => {
     const isFormData = data instanceof FormData;
     const headers: any = {};
-    if (!isFormData) headers['Content-Type'] = 'application/json';
+    if (isFormData) {
+      headers['Content-Type'] = undefined;
+    } else {
+      headers['Content-Type'] = 'application/json';
+    }
     return axiosInstance.patch<any, GlobalResponse<Company>>(`/api/companies/${id}/`, data, { headers });
   },
   delete: (id: number) => axiosInstance.delete(`/api/companies/${id}/`),

@@ -8,6 +8,7 @@ import Logo from '@/components/ui/Logo';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { jobsApi, companiesApi } from '@/lib/api';
+import { getMediaUrl } from '@/lib/utils';
 
 const FIELD = ({ label, icon, children, required }) => (
   <div>
@@ -44,6 +45,7 @@ export default function AddJobPage() {
   const [companies, setCompanies] = useState([]);
   const [isNewCompany, setIsNewCompany] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
+  const [createdCompanyId, setCreatedCompanyId] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
   const [form, setForm] = useState({
     title: '', shortDesc: '', fullDesc: '', salary: '', location: '',
@@ -96,33 +98,48 @@ export default function AddJobPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.company || !form.salary || !form.location) {
+    if (!form.title || (!form.company && !newCompanyName) || !form.salary || !form.location) {
       toast.error('Please fill in all required fields.');
       return;
+    }
+
+    if (form.deadline) {
+      const selected = new Date(form.deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selected < today) {
+        toast.error('Deadline cannot be in the past! 📅');
+        return;
+      }
     }
     setLoading(true);
     try {
       let companyId = parseInt(form.company);
       
       if (isNewCompany) {
-        if (!newCompanyName) {
-          toast.error('Please enter a new company name.');
-          setLoading(false);
-          return;
-        }
-        const compRes = await companiesApi.create({
-          company_name: newCompanyName,
-          location: form.location || 'Remote',
-          industry: 'Technology',
-          short_description: 'A newly added company.',
-          full_description: 'More details coming soon.'
-        });
-        if (compRes.success && compRes.data?.id) {
-          companyId = compRes.data.id;
+        if (createdCompanyId) {
+          companyId = createdCompanyId;
         } else {
-          toast.error(compRes.message || 'Failed to create new company.');
-          setLoading(false);
-          return;
+          if (!newCompanyName) {
+            toast.error('Please enter a new company name.');
+            setLoading(false);
+            return;
+          }
+          const compRes = await companiesApi.create({
+            company_name: newCompanyName,
+            location: form.location || 'Remote',
+            industry: 'Technology',
+            short_description: 'A newly added company.',
+            full_description: 'More details coming soon.'
+          });
+          if (compRes.success && compRes.data?.id) {
+            companyId = compRes.data.id;
+            setCreatedCompanyId(companyId);
+          } else {
+            toast.error(compRes.message || 'Failed to create new company.');
+            setLoading(false);
+            return;
+          }
         }
       }
 
@@ -130,15 +147,28 @@ export default function AddJobPage() {
       formData.append('title', form.title);
       formData.append('short_description', form.shortDesc);
       formData.append('full_description', form.fullDesc);
-      formData.append('salary', parseFloat(form.salary.replace(/[^0-9.]/g, '')) || 0);
+      // Ensure salary is a number
+      const salaryNum = parseFloat(form.salary.toString().replace(/[^0-9.]/g, '')) || 0;
+      formData.append('salary', salaryNum);
       formData.append('location', form.location);
       formData.append('job_type', form.type);
       formData.append('experience_level', form.experience);
       formData.append('deadline', form.deadline);
-      formData.append('tech_stack', JSON.stringify(form.tags.split(',').map(t => t.trim()).filter(t => t)));
+      const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+      formData.append('tech_stack', JSON.stringify(tags));
       formData.append('company', companyId);
       if (form.bannerUrl) formData.append('banner_image_url', form.bannerUrl);
       if (bannerFile) formData.append('banner_image', bannerFile);
+
+      if (!companyId) {
+        toast.error('Please select or add a company.');
+        setLoading(false);
+        return;
+      }
+
+      if (!form.deadline) {
+        formData.delete('deadline');
+      }
 
       const response = await jobsApi.create(formData);
       if (response.success) {
@@ -182,8 +212,8 @@ export default function AddJobPage() {
                   <input className={inputCls} style={inputStyle} value={form.title} onChange={set('title')} placeholder="e.g. Senior Frontend Engineer" />
                 </FIELD>
               </div>
-              <FIELD label="Salary Range" icon={<DollarSign size={13} />} required>
-                <input className={inputCls} style={inputStyle} value={form.salary} onChange={set('salary')} placeholder="e.g. $120K – $160K" />
+              <FIELD label="Salary Range (BDT)" icon={<span>৳</span>} required>
+                <input type="number" className={inputCls} style={inputStyle} value={form.salary} onChange={set('salary')} placeholder="e.g. 80000" />
               </FIELD>
               <FIELD label="Job Type" icon={<Briefcase size={13} />} required>
                 <select className={inputCls} style={inputStyle} value={form.type} onChange={set('type')}>

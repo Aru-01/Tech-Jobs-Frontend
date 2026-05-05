@@ -1,7 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin, Users, Briefcase, ExternalLink } from 'lucide-react';
+import { MapPin, Users, Briefcase, ExternalLink, ShieldCheck, Check } from 'lucide-react';
+import { getMediaUrl } from '@/lib/utils';
 
 export default function CompanyCard({ company, index }) {
   const name = company.company_name || company.name;
@@ -23,14 +24,21 @@ export default function CompanyCard({ company, index }) {
       <Link href={`/companies/${company.id}`}>
         <div className="glass-card p-6 rounded-3xl h-full transition-all duration-300 company-card-uniform">
           <div className="flex justify-between items-start mb-6">
-            <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden"
-              style={{ background: company.color || '#6366f1' }}
-            >
-              {logo ? (
-                <img src={logo} alt={name} className="w-full h-full object-cover" />
-              ) : (
-                name?.[0]
+            <div className="relative">
+              <div 
+                className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg overflow-hidden"
+                style={{ background: company.color || '#6366f1' }}
+              >
+                {logo ? (
+                  <img src={getMediaUrl(logo)} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  name?.[0]
+                )}
+              </div>
+              {company.is_verified && (
+                <div className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white w-5 h-5 rounded-full shadow-lg border-2 border-[var(--surface)] flex items-center justify-center">
+                  <Check size={10} strokeWidth={4} />
+                </div>
               )}
             </div>
             <div className="px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[var(--surface-2)] text-[var(--muted)] group-hover:bg-[rgba(99,102,241,0.1)] group-hover:text-[var(--accent)] transition-colors">

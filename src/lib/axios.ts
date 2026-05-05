@@ -7,7 +7,6 @@ export const axiosInstance = axios.create({
   withCredentials: true, // Send cookies with every request (for JWTCookieAuthentication)
   timeout: 15000,        // 15-second timeout
   headers: {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
@@ -59,10 +58,11 @@ axiosInstance.interceptors.response.use(
 
       if (data && typeof data === 'object') {
         if (data.success === false && data.message) {
-          // Already in our format
+          console.error('[API Error Detail]:', data);
           return Promise.resolve(data);
         }
         // Raw DRF/allauth error format
+        console.error('[Raw API Error]:', data);
         message = data.detail || data.non_field_errors?.[0] || data.message || 'An error occurred';
         errors = data;
       }
