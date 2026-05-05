@@ -15,6 +15,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'tech-jobs-backend.vercel.app',
+      }
+    ],
+  },
 };
 
 export default nextConfig;
