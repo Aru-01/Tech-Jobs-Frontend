@@ -7,8 +7,31 @@ import CategoryCard from '@/components/cards/CategoryCard';
 import { CATEGORIES } from '@/lib/mockData';
 import { dashboardApi } from '@/lib/api';
 
+const PALETTE = [
+  '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', 
+  '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#84cc16'
+];
+
+const VARIETY_ICONS = [
+  'Monitor', 'Server', 'Cloud', 'Brain', 'Globe', 'Palette', 
+  'Code2', 'Database', 'Shield', 'Smartphone', 'Layers', 'Terminal'
+];
+
 export default function JobCategories({ initialCategories = [] }) {
-  const [categories, setCategories] = useState(initialCategories);
+  const enrichCategories = (cats) => {
+    return cats.map((cat, i) => {
+      const existing = CATEGORIES.find(c => c.label === cat.label);
+      return {
+        ...cat,
+        id: cat.id || existing?.id || (cat.label ? cat.label.toLowerCase() : `cat-${i}`),
+        icon: cat.icon && cat.icon !== 'Grid3x3' ? cat.icon : (existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
+        color: cat.color && cat.color !== '#06b6d4' ? cat.color : (existing?.color || PALETTE[i % PALETTE.length]),
+        count: cat.count || (cat.jobs_count ? `${cat.jobs_count} jobs` : '0 jobs')
+      };
+    });
+  };
+
+  const [categories, setCategories] = useState(enrichCategories(initialCategories));
   const [isLoading, setIsLoading] = useState(initialCategories.length === 0);
 
   useEffect(() => {
@@ -19,17 +42,11 @@ export default function JobCategories({ initialCategories = [] }) {
         const stats = response.data?.data || response.data;
         
         if (stats && stats.specialties) {
-          const updatedCategories = stats.specialties.map(spec => {
-            const existing = CATEGORIES.find(c => c.label === spec.label);
-            return {
-              id: existing?.id || spec.label.toLowerCase(),
-              label: spec.label,
-              count: `${spec.count} jobs`,
-              icon: existing?.icon || 'Grid3x3',
-              color: existing?.color || '#06b6d4'
-            };
-          });
-          setCategories(updatedCategories);
+          const processed = stats.specialties.map(spec => ({
+            label: spec.label,
+            count: `${spec.count} jobs`,
+          }));
+          setCategories(enrichCategories(processed));
         }
       } catch (error) {
         console.error('Failed to fetch job category stats:', error);
@@ -39,6 +56,7 @@ export default function JobCategories({ initialCategories = [] }) {
     };
     fetchStats();
   }, [initialCategories]);
+
 
   // Show max 12 (3 lines of 4)
   const displayed = categories.slice(0, 12);

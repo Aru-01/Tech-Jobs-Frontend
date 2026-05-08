@@ -30,8 +30,26 @@ async function getAllSpecialties() {
   }
 }
 
+const PALETTE = [
+  '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', 
+  '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#84cc16'
+];
+
+const VARIETY_ICONS = [
+  'Monitor', 'Server', 'Cloud', 'Brain', 'Globe', 'Palette', 
+  'Code2', 'Database', 'Shield', 'Smartphone', 'Layers', 'Terminal'
+];
+
 export default async function SpecialtiesPage() {
-  const specialties = await getAllSpecialties();
+  const rawSpecialties = await getAllSpecialties();
+  const specialties = rawSpecialties.map((spec: any, i: number) => {
+    const existing = CATEGORIES.find(c => c.label === spec.label);
+    return {
+      ...spec,
+      icon: spec.icon && spec.icon !== 'Grid3x3' ? spec.icon : (existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
+      color: spec.color && spec.color !== '#06b6d4' ? spec.color : (existing?.color || PALETTE[i % PALETTE.length]),
+    };
+  });
 
   return (
     <main className="min-h-screen pt-32 pb-20">
@@ -45,10 +63,6 @@ export default async function SpecialtiesPage() {
           </p>
         </div>
 
-        {/* We can reuse JobCategories component but pass all specialties and tell it to show all */}
-        {/* But JobCategories component is designed as a section. Let's make a simplified version or just use it. */}
-        {/* For now, I'll just pass all specialties to JobCategories and it will slice it. Wait, I should update JobCategories to allow showing all if a prop is passed. */}
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {specialties.map((cat, i) => (
             <CategoryCardWrapper key={cat.id || i} cat={cat} i={i} />
@@ -58,6 +72,7 @@ export default async function SpecialtiesPage() {
     </main>
   );
 }
+
 
 // Simple wrapper since CategoryCard is 'use client'
 import CategoryCard from '@/components/cards/CategoryCard';
