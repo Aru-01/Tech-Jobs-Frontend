@@ -1,20 +1,35 @@
 'use client';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
-import { TESTIMONIALS } from '@/lib/mockData';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Star, Quote } from 'lucide-react';
+import { TESTIMONIALS, COMPANIES } from '@/lib/mockData';
 
 export default function Testimonials() {
-  const [current, setCurrent] = useState(0);
-  const prev = () => setCurrent((c) => (c - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
-  const next = () => setCurrent((c) => (c + 1) % TESTIMONIALS.length);
+  const [mounted, setMounted] = useState(false);
+  const [displayTestimonials, setDisplayTestimonials] = useState([]);
+
+  useEffect(() => {
+    setMounted(true);
+    // Randomize companies from the verified list for each testimonial
+    const verifiedCompanies = COMPANIES.filter(c => c.name).map(c => c.name);
+    
+    const randomized = TESTIMONIALS.map(t => ({
+      ...t,
+      // Randomly pick a company from the verified list
+      company: `Hired at ${verifiedCompanies[Math.floor(Math.random() * verifiedCompanies.length)]}`
+    }));
+    
+    setDisplayTestimonials([...randomized, ...randomized]);
+  }, []);
+
+  if (!mounted || displayTestimonials.length === 0) return null;
 
   return (
-    <section className="py-24 relative section-gradient" id="testimonials">
+    <section className="py-24 relative section-gradient overflow-hidden" id="testimonials">
       <div className="absolute inset-0 grid-bg opacity-20" />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-14">
         {/* Header */}
-        <div className="text-center mb-14">
+        <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -45,35 +60,46 @@ export default function Testimonials() {
             Real stories from developers who landed their dream job through Tech_Jobs.
           </motion.p>
         </div>
+      </div>
 
-        {/* Testimonial cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {TESTIMONIALS.map((t, i) => (
-            <motion.div
-              key={t.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="glass-card p-6 rounded-2xl relative"
+      {/* Auto Slider Container */}
+      <div className="relative w-full overflow-hidden flex items-center">
+        {/* Gradient Masks for fading edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 md:w-40 z-20 pointer-events-none" style={{ background: 'linear-gradient(to right, var(--background), transparent)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-16 md:w-40 z-20 pointer-events-none" style={{ background: 'linear-gradient(to left, var(--background), transparent)' }} />
+        
+        <motion.div
+          className="flex gap-6 w-max pl-6 hover:[animation-play-state:paused]"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ ease: "linear", duration: 50, repeat: Infinity }}
+        >
+          {displayTestimonials.map((t, i) => (
+            <div
+              key={`${t.id}-${i}`}
+              className="glass-card p-6 rounded-2xl relative w-[300px] sm:w-[400px] shrink-0 border border-white/5 hover:border-indigo-500/30 transition-colors duration-500"
             >
               {/* Quote icon */}
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center mb-4"
+                className="w-8 h-8 rounded-lg flex items-center justify-center mb-4 shadow-inner"
                 style={{ background: 'rgba(99,102,241,0.1)' }}
               >
-                <Quote size={16} style={{ color: 'var(--accent)' }} />
+                <Quote size={16} className="text-indigo-400" />
               </div>
 
               {/* Stars */}
               <div className="flex gap-1 mb-4">
-                {Array.from({ length: t.rating }).map((_, idx) => (
-                  <Star key={idx} size={14} fill="#f59e0b" style={{ color: '#f59e0b' }} />
+                {Array.from({ length: 5 }).map((_, idx) => (
+                  <Star 
+                    key={idx} 
+                    size={14} 
+                    fill={idx < t.rating ? "#f59e0b" : "transparent"} 
+                    style={{ color: idx < t.rating ? '#f59e0b' : 'rgba(255,255,255,0.1)' }} 
+                  />
                 ))}
               </div>
 
               {/* Text */}
-              <p className="text-sm leading-relaxed mb-6 italic" style={{ color: 'var(--muted)' }}>
+              <p className="text-sm leading-relaxed mb-6 italic min-h-[80px]" style={{ color: 'var(--muted)' }}>
                 "{t.text}"
               </p>
 
@@ -82,24 +108,24 @@ export default function Testimonials() {
                 <img
                   src={t.avatar}
                   alt={t.name}
-                  className="w-10 h-10 rounded-full"
+                  className="w-10 h-10 rounded-full grayscale hover:grayscale-0 transition-all duration-300"
                   style={{ border: '2px solid rgba(99,102,241,0.3)' }}
                 />
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{t.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--accent)' }}>{t.role}</p>
-                  <p className="text-xs" style={{ color: 'var(--muted)' }}>{t.company}</p>
+                  <p className="text-xs font-medium text-indigo-400">{t.role}</p>
+                  <p className="text-[10px] mt-0.5 opacity-70" style={{ color: 'var(--muted)' }}>{t.company}</p>
                 </div>
               </div>
 
-              {/* Bottom gradient */}
+              {/* Bottom decorative gradient */}
               <div
-                className="absolute bottom-0 left-6 right-6 h-px"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.3), transparent)' }}
+                className="absolute bottom-0 left-6 right-6 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)' }}
               />
-            </motion.div>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
