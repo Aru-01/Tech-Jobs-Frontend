@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+if (typeof window !== 'undefined') {
+  console.log('[API Debug] Base URL:', BASE_URL);
+}
+
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // Send cookies with every request (for JWTCookieAuthentication)

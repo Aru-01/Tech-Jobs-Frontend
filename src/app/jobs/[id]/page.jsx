@@ -1,33 +1,42 @@
 'use client';
-import { use } from 'react';
-import { notFound } from 'next/navigation';
+import { use, useState, useEffect } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, DollarSign, Clock, Calendar, Bookmark,
-  Share2, Briefcase, Users, CheckCircle, ExternalLink, Globe, Check
+  Share2, Briefcase, Users, CheckCircle, ExternalLink, Globe, Check,
+  Loader2, Sparkles, Building2
 } from 'lucide-react';
-import { JOBS } from '@/lib/mockData';
+import { jobsApi } from '@/lib/api';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-
-import { useState, useEffect } from 'react';
-import { jobsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { getMediaUrl } from '@/lib/utils';
 
-const TYPE_COLORS = { 'full_time': 'green', 'part_time': 'amber', 'contract': 'violet', 'freelance': 'cyan', 'internship': 'indigo' };
+const TYPE_COLORS = { 
+  'full_time': 'green', 
+  'part_time': 'amber', 
+  'contract': 'violet', 
+  'freelance': 'cyan', 
+  'internship': 'indigo',
+  'Full-time': 'green',
+  'Part-time': 'amber'
+};
 
 export default function JobDetailPage({ params }) {
   const { id } = use(params);
+  const router = useRouter();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchJob = async () => {
+      if (!id) return;
       try {
+        setLoading(true);
         const response = await jobsApi.get(id);
-        if (response.success) {
+        if (response.success && response.data) {
           setJob(response.data);
         } else {
           setJob(null);
@@ -43,231 +52,202 @@ export default function JobDetailPage({ params }) {
     fetchJob();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen pt-32 text-center text-white">Loading job details...</div>;
-  if (!job) notFound();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#020617]">
+        <Loader2 className="animate-spin text-indigo-500" size={40} />
+        <p className="text-slate-400 text-sm font-medium animate-pulse">Loading job details...</p>
+      </div>
+    );
+  }
 
-  const type = job.job_type;
+  if (!job) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#020617] px-4">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto border border-white/5 shadow-2xl">
+            <Briefcase size={32} className="text-slate-700" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Job Not Found</h2>
+            <p className="text-slate-400 text-sm">The job listing you are looking for doesn't exist or has been closed.</p>
+          </div>
+          <Button onClick={() => router.push('/jobs')} variant="primary" className="!rounded-2xl">
+            <ArrowLeft size={18} className="mr-2" />
+            Back to Jobs
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const type = job.job_type || job.type;
   const typeColor = TYPE_COLORS[type] || 'indigo';
   const companyName = job.company_details?.company_name || job.company_name || 'Tech Company';
   const companyLogo = job.company_details?.logo_url || job.company_logo || null;
-  const companyColor = '#6366f1';
+  const companyColor = job.companyColor || '#6366f1';
 
-  // Parse fullDescription into paragraphs/sections
-  const fullDescription = job.full_description || '';
+  const fullDescription = job.full_description || job.description || '';
   const sections = fullDescription.split('\n\n');
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Hero Banner */}
-      <div
-        className="relative pt-24 pb-16 overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${job.companyColor}18 0%, var(--background) 70%)`,
-          borderBottom: '1px solid var(--border)',
-        }}
-      >
-        <div className="absolute inset-0 dot-pattern opacity-20" />
-        <div
-          className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none"
-          style={{ background: `radial-gradient(circle, ${companyColor}20, transparent)`, transform: 'translate(30%, -30%)' }}
-        />
+    <div className="min-h-screen bg-[#020617]">
+      {/* Premium Hero Section */}
+      <div className="relative pt-32 pb-20 overflow-hidden border-b border-white/5">
+        <div className="absolute inset-0 z-0">
+          <div 
+            className="absolute top-0 right-0 w-[50%] h-full opacity-20 blur-[120px]"
+            style={{ background: `radial-gradient(circle, ${companyColor}40, transparent)` }}
+          />
+          <div className="absolute inset-0 dot-pattern opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617]/80 to-[#020617]" />
+        </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back */}
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-8">
-            <Link
-              href="/jobs"
-              className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: 'var(--muted)' }}
-            >
-              <ArrowLeft size={16} /> Back to Jobs
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="mb-10">
+            <Link href="/jobs" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium">
+              <ArrowLeft size={16} /> Back to Search
             </Link>
           </motion.div>
 
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
-            {/* Left: Company + Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="flex-1"
-            >
-              <div className="flex items-center gap-4 mb-5">
-                {/* Company logo */}
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-                  style={{ background: `${companyColor}15`, border: `2px solid ${companyColor}30`, boxShadow: `0 0 30px ${companyColor}20` }}
-                >
-                  {companyLogo ? (
-                    <img src={getMediaUrl(companyLogo)} alt={companyName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xl font-bold" style={{ color: companyColor }}>{companyName[0]}</span>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>{companyName}</p>
-                    {job.company_details?.is_verified && (
-                      <div className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white shadow-sm">
-                        <Check size={11} strokeWidth={4} />
-                      </div>
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex-1">
+              <div className="flex items-center gap-5 mb-8">
+                <div className="w-20 h-20 rounded-[2rem] p-1 bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden">
+                  <div className="w-full h-full rounded-[1.8rem] flex items-center justify-center overflow-hidden" style={{ background: `${companyColor}20` }}>
+                    {companyLogo ? (
+                      <img src={getMediaUrl(companyLogo)} alt={companyName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl font-bold" style={{ color: companyColor }}>{companyName[0]}</span>
                     )}
                   </div>
-                  <Badge color={typeColor} dot>{type}</Badge>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">{companyName}</p>
+                    {job.company_details?.is_verified && <CheckCircle size={14} className="text-blue-500" />}
+                  </div>
+                  <Badge color={typeColor} dot className="text-[10px] font-bold uppercase tracking-widest px-3 py-1">{type}</Badge>
                 </div>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-5" style={{ color: 'var(--foreground)' }}>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-8">
                 {job.title}
               </h1>
 
-              {/* Meta row */}
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-6">
                 {[
-                  { icon: <MapPin size={15} />, label: job.location, color: 'var(--accent)' },
-                  { icon: <span className="text-base font-bold">৳</span>, label: job.salary, color: '#10b981' },
-                  { icon: <Clock size={15} />, label: `Posted ${new Date(job.created_at).toLocaleDateString()}`, color: 'var(--accent-3)' },
-                  { icon: <Calendar size={15} />, label: `Deadline: ${job.deadline || 'No Deadline'}`, color: '#f59e0b' },
+                  { icon: <MapPin size={18} />, label: job.location, color: 'text-indigo-400' },
+                  { icon: <span className="text-xl font-bold">৳</span>, label: job.salary, color: 'text-emerald-400' },
+                  { icon: <Clock size={18} />, label: `Posted ${new Date(job.created_at).toLocaleDateString()}`, color: 'text-purple-400' },
+                  { icon: <Users size={18} />, label: job.experience_level, color: 'text-rose-400' },
                 ].map((m, i) => (
-                  <span key={i} className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--muted)' }}>
-                    <span style={{ color: m.color }}>{m.icon}</span>
-                    {m.label}
-                  </span>
+                  <div key={i} className="flex items-center gap-2.5 text-slate-300 font-medium">
+                    <span className={m.color}>{m.icon}</span>
+                    <span className="text-sm">{m.label}</span>
+                  </div>
                 ))}
               </div>
             </motion.div>
 
-            {/* Right: Action Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="lg:w-72 glass-card rounded-2xl p-6"
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="lg:w-80 glass-card p-8 rounded-[2.5rem] border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl"
             >
-              <div className="text-2xl font-bold mb-1 gradient-text"><span className="text-xl">৳</span> {job.salary}</div>
-              <p className="text-xs mb-5" style={{ color: 'var(--muted)' }}>Salary range</p>
+              <div className="mb-8">
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Monthly Salary</div>
+                <div className="text-3xl font-black text-white flex items-center gap-2">
+                  <span className="text-emerald-500">৳</span>
+                  {job.salary}
+                </div>
+              </div>
 
-              <div className="space-y-3">
-                <Button
-                  variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}
-                  onClick={() => toast('🚀 Applications coming soon! This service will be available shortly.', { icon: '⏳', duration: 4000 })}
+              <div className="space-y-4">
+                <Button 
+                  variant="primary" size="lg" fullWidth 
+                  className="!rounded-2xl !py-4 shadow-xl shadow-indigo-500/30"
+                  onClick={() => toast.success('Application portal is now live! 🚀', { icon: '🔥' })}
                 >
                   Apply Now
                 </Button>
-                <Button
-                  variant="secondary" size="md" fullWidth icon={<Bookmark size={15} />}
-                  onClick={() => toast('Saved! Job bookmarking coming soon.', { icon: '🔖' })}
-                >
-                  Save Job
-                </Button>
-                <Button
-                  variant="ghost" size="md" fullWidth icon={<Share2 size={15} />}
-                  onClick={() => { navigator.clipboard?.writeText(window.location.href); toast.success('Link copied to clipboard!'); }}
-                >
-                  Share
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="secondary" fullWidth className="!rounded-xl !py-3 bg-white/5 border-white/10 hover:bg-white/10">
+                    <Bookmark size={18} />
+                  </Button>
+                  <Button 
+                    variant="secondary" fullWidth className="!rounded-xl !py-3 bg-white/5 border-white/10 hover:bg-white/10"
+                    onClick={() => { navigator.clipboard?.writeText(window.location.href); toast.success('Link copied!'); }}
+                  >
+                    <Share2 size={18} />
+                  </Button>
+                </div>
               </div>
 
-              <div className="mt-5 pt-5" style={{ borderTop: '1px solid var(--border)' }}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Globe size={14} style={{ color: 'var(--accent)' }} />
-                  <span className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>Company</span>
+              <div className="mt-8 pt-8 border-t border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-indigo-400">
+                    <Sparkles size={20} />
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">
+                    Premium Listing <br /> <span className="text-slate-300">Verified by Tech_Jobs</span>
+                  </p>
                 </div>
-                <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{companyName}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{job.location}</p>
               </div>
             </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main description */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <div
-              className="rounded-2xl p-8"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-            >
-              <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--foreground)' }}>About the Role</h2>
-
-              <div className="space-y-4 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-                {sections.map((section, i) => {
-                  if (section.startsWith('**')) {
-                    const lines = section.split('\n');
-                    const heading = lines[0].replace(/\*\*/g, '');
-                    const rest = lines.slice(1);
-                    return (
-                      <div key={i} className="mt-6">
-                        <h3 className="text-base font-bold mb-3" style={{ color: 'var(--foreground)' }}>{heading}</h3>
-                        <ul className="space-y-2">
-                          {rest.filter(l => l.trim()).map((line, j) => (
-                            <li key={j} className="flex items-start gap-2">
-                              <CheckCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--accent)' }} />
-                              <span>{line.replace(/^- /, '')}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  }
-                  return <p key={i}>{section}</p>;
-                })}
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:col-span-2 space-y-12">
+            <section>
+              <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                <span className="w-1 h-8 bg-indigo-500 rounded-full" />
+                Job Description
+              </h2>
+              <div className="glass-card p-8 sm:p-10 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
+                <div className="space-y-6 text-slate-300 leading-relaxed text-lg">
+                  {sections.map((section, i) => (
+                    <p key={i} className="whitespace-pre-wrap">{section}</p>
+                  ))}
+                </div>
               </div>
-            </div>
+            </section>
           </motion.div>
 
-          {/* Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="space-y-5"
-          >
-            {/* Tech Stack */}
-            <div className="rounded-2xl p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <h3 className="text-sm font-bold mb-4" style={{ color: 'var(--foreground)' }}>Tech Stack</h3>
+          <div className="space-y-8">
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Tech Stack</h3>
               <div className="flex flex-wrap gap-2">
                 {(Array.isArray(job.tech_stack) ? job.tech_stack : (typeof job.tech_stack === 'string' ? job.tech_stack.split(',').filter(t => t) : [])).map((tag) => (
-                  <span key={tag} className="tag">{tag}</span>
+                  <span key={tag} className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold">
+                    {tag}
+                  </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            {/* Job Details */}
-            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>Job Details</h3>
-              {[
-                { label: 'Job Type', value: type },
-                { label: 'Location', value: job.location },
-                { label: 'Experience', value: job.experience_level },
-                { label: 'Deadline', value: job.deadline },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between items-center">
-                  <span className="text-xs" style={{ color: 'var(--muted)' }}>{label}</span>
-                  <span className="text-xs font-semibold capitalize" style={{ color: 'var(--foreground)' }}>{value}</span>
-                </div>
-              ))}
-                <div className="flex flex-col">
-                  <span className="text-xs" style={{ color: 'var(--muted)' }}>Salary Range</span>
-                  <span className="text-base font-bold flex items-center gap-1" style={{ color: '#10b981' }}>
-                    <span className="text-lg">৳</span> {job.salary}
-                  </span>
-                </div>
-            </div>
-
-            <div className="lg:hidden rounded-2xl p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <Button
-                variant="primary" size="lg" fullWidth icon={<CheckCircle size={16} />}
-                onClick={() => toast('🚀 Applications coming soon! This service will be available shortly.', { icon: '⏳', duration: 4000 })}
-              >Apply Now</Button>
-            </div>
-          </motion.div>
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="glass-card p-8 rounded-[2.5rem] border border-white/5 bg-white/[0.02]">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Summary</h3>
+              <div className="space-y-4">
+                {[
+                  { label: 'Role', value: job.title },
+                  { label: 'Type', value: type },
+                  { label: 'Exp', value: job.experience_level },
+                  { label: 'Deadline', value: job.deadline || 'Ongoing' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
+                    <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+                    <span className="text-sm font-bold text-slate-200">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

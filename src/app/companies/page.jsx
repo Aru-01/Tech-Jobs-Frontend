@@ -50,7 +50,7 @@ export default function CompaniesPage() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium mb-6"
         >
           <Building2 size={16} />
-          <span>Top 3,200+ Companies</span>
+          <span>Top 120+ Companies</span>
         </motion.div>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -126,9 +126,9 @@ export default function CompaniesPage() {
       {/* Stats Section */}
       <div className="mt-32 grid grid-cols-1 sm:grid-cols-3 gap-8">
         {[
-          { icon: <TrendingUp className="text-emerald-400" />, label: 'Fastest Growing', value: '850+' },
-          { icon: <Users className="text-accent" />, label: 'Diverse Cultures', value: '2,400+' },
-          { icon: <Building2 className="text-purple-400" />, label: 'Fortune 500', value: '120+' },
+          { icon: <TrendingUp className="text-emerald-400" />, label: 'Fastest Growing', value: '45+' },
+          { icon: <Users className="text-accent" />, label: 'Diverse Cultures', value: '120+' },
+          { icon: <Building2 className="text-purple-400" />, label: 'Hiring Now', value: '15+' },
         ].map((stat, i) => (
           <motion.div
             key={i}
