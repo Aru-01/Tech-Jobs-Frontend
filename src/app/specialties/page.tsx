@@ -30,6 +30,45 @@ async function getAllSpecialties() {
   }
 }
 
+const ICON_KEYWORDS: Record<string, string> = {
+  frontend: 'Monitor',
+  backend: 'Server',
+  cloud: 'Cloud',
+  devops: 'Workflow',
+  database: 'Database',
+  data: 'Database',
+  'ai/ml': 'Brain',
+  ai: 'Brain',
+  ml: 'Brain',
+  design: 'Palette',
+  'ui/ux': 'Palette',
+  ux: 'Palette',
+  mobile: 'Smartphone',
+  android: 'Smartphone',
+  ios: 'Smartphone',
+  security: 'Shield',
+  cyber: 'Shield',
+  fullstack: 'Layers',
+  'full stack': 'Layers',
+  api: 'Terminal',
+  software: 'Code2',
+  engineering: 'Cpu',
+  testing: 'Search',
+  qa: 'Search',
+};
+
+const COLOR_KEYWORDS: Record<string, string> = {
+  frontend: '#6366f1',
+  backend: '#8b5cf6',
+  cloud: '#06b6d4',
+  devops: '#06b6d4',
+  design: '#f43f5e',
+  ai: '#f59e0b',
+  database: '#3b82f6',
+  mobile: '#10b981',
+  security: '#ef4444',
+};
+
 const PALETTE = [
   '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', 
   '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#84cc16'
@@ -40,16 +79,36 @@ const VARIETY_ICONS = [
   'Code2', 'Database', 'Shield', 'Smartphone', 'Layers', 'Terminal'
 ];
 
+const getSemanticIcon = (label: string) => {
+  const lowLabel = label.toLowerCase();
+  for (const [key, icon] of Object.entries(ICON_KEYWORDS)) {
+    if (lowLabel.includes(key)) return icon;
+  }
+  return null;
+};
+
+const getSemanticColor = (label: string) => {
+  const lowLabel = label.toLowerCase();
+  for (const [key, color] of Object.entries(COLOR_KEYWORDS)) {
+    if (lowLabel.includes(key)) return color;
+  }
+  return null;
+};
+
 export default async function SpecialtiesPage() {
   const rawSpecialties = await getAllSpecialties();
   const specialties = rawSpecialties.map((spec: any, i: number) => {
     const existing = CATEGORIES.find(c => c.label === spec.label);
+    const semanticIcon = getSemanticIcon(spec.label);
+    const semanticColor = getSemanticColor(spec.label);
+
     return {
       ...spec,
-      icon: spec.icon && spec.icon !== 'Grid3x3' ? spec.icon : (existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
-      color: spec.color && spec.color !== '#06b6d4' ? spec.color : (existing?.color || PALETTE[i % PALETTE.length]),
+      icon: spec.icon && spec.icon !== 'Grid3x3' ? spec.icon : (semanticIcon || existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
+      color: spec.color && spec.color !== '#06b6d4' ? spec.color : (semanticColor || existing?.color || PALETTE[i % PALETTE.length]),
     };
   });
+
 
   return (
     <main className="min-h-screen pt-32 pb-20">
@@ -64,7 +123,7 @@ export default async function SpecialtiesPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {specialties.map((cat, i) => (
+          {specialties.map((cat: any, i: number) => (
             <CategoryCardWrapper key={cat.id || i} cat={cat} i={i} />
           ))}
         </div>
@@ -76,6 +135,7 @@ export default async function SpecialtiesPage() {
 
 // Simple wrapper since CategoryCard is 'use client'
 import CategoryCard from '@/components/cards/CategoryCard';
-function CategoryCardWrapper({ cat, i }: any) {
+function CategoryCardWrapper({ cat, i }: { cat: any; i: number }) {
   return <CategoryCard category={cat} index={i} />;
 }
+

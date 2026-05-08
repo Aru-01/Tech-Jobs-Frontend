@@ -19,7 +19,7 @@ export default function JobCard({ job, index = 0, compact = false }) {
   const location = job.location;
   const salary = job.salary;
   const type = job.job_type || job.type;
-  
+
   // Robust tech stack parsing
   let tags = [];
   if (Array.isArray(job.tech_stack)) {
@@ -51,8 +51,8 @@ export default function JobCard({ job, index = 0, compact = false }) {
     >
       <Link href={`/jobs/${job.id}`} className="block group h-full">
         <div
-          className="glass-card p-6 rounded-2xl flex flex-col h-full relative overflow-hidden cursor-pointer"
-          style={{ minHeight: '340px' }}
+          className="glass-card p-5 rounded-2xl flex flex-col h-full relative overflow-hidden cursor-pointer"
+          style={{ minHeight: '260px' }}
         >
           {/* Featured glow */}
           {job.featured && (
@@ -62,11 +62,11 @@ export default function JobCard({ job, index = 0, compact = false }) {
             />
           )}
 
-          {/* Header Section - Fixed Height for alignment */}
-          <div className="flex items-start justify-between gap-3 mb-5 min-h-[60px]">
+          {/* Header Section */}
+          <div className="flex items-start justify-between gap-3 mb-4 min-h-[54px]">
             <div className="flex items-center gap-3 overflow-hidden">
               <div
-                className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+                className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden"
                 style={{
                   background: `${job.companyColor || '#6366f1'}15`,
                   border: `1px solid ${job.companyColor || '#6366f1'}30`,
@@ -79,17 +79,17 @@ export default function JobCard({ job, index = 0, compact = false }) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center font-bold text-lg text-accent">
+                  <div className="w-full h-full flex items-center justify-center font-bold text-base text-accent">
                     {companyName?.[0] || 'J'}
                   </div>
                 )}
               </div>
               <div className="overflow-hidden">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <p className="text-xs font-medium truncate" style={{ color: 'var(--muted)' }}>{companyName}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: 'var(--muted)' }}>{companyName}</p>
                   {job.company_details?.is_verified && (
-                    <div className="flex-shrink-0 flex items-center justify-center w-3.5 h-3.5 rounded-full bg-blue-500 text-white shadow-sm">
-                      <Check size={10} strokeWidth={4} />
+                    <div className="flex-shrink-0 flex items-center justify-center w-3 h-3 rounded-full bg-blue-500 text-white shadow-sm">
+                      <Check size={8} strokeWidth={4} />
                     </div>
                   )}
                 </div>
@@ -104,51 +104,52 @@ export default function JobCard({ job, index = 0, compact = false }) {
 
             <motion.button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              className="w-9 h-9 flex items-center justify-center rounded-xl flex-shrink-0 transition-all border border-border bg-surface-2 text-muted hover:text-accent hover:border-accent/30"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 transition-all border border-border bg-surface-2 text-muted hover:text-accent hover:border-accent/30"
             >
-              <Bookmark size={15} />
+              <Bookmark size={14} />
             </motion.button>
           </div>
 
-          {/* Description Section - Fixed Height */}
+          {/* Description Section */}
           {!compact && (
-            <div className="h-[44px] overflow-hidden mb-5">
-              <p className="text-sm leading-relaxed line-clamp-2" style={{ color: 'var(--muted)' }}>
+            <div className="h-[40px] overflow-hidden mb-4">
+              <p className="text-xs leading-relaxed line-clamp-2" style={{ color: 'var(--muted)' }}>
                 {description}
               </p>
             </div>
           )}
 
           {/* Meta Info */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2 mb-6">
-            <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--muted)' }}>
-              <MapPin size={13} className="text-accent" /> {location}
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 mb-4">
+            <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--muted)' }}>
+              <MapPin size={12} className="text-accent" /> {location}
             </span>
-            <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
-              <span className="text-sm">৳</span> {salary}
+            <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
+              <span className="text-xs">৳</span> {salary}
             </span>
-            <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: 'var(--muted)' }}>
-              <Clock size={13} className="text-accent-3" /> {posted}
+            <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: 'var(--muted)' }}>
+              <Clock size={12} className="text-accent-3" /> {posted}
             </span>
           </div>
 
-          {/* Footer: Tags + Type - Pushed to bottom */}
-          <div className="mt-auto flex items-center justify-between gap-3 pt-4 border-t border-border/50">
-            <div className="flex flex-wrap gap-1.5 h-[26px] overflow-hidden">
+          {/* Footer: Tags + Type */}
+          <div className="mt-auto flex items-center justify-between gap-3 pt-3 border-t border-border/40">
+            <div className="flex flex-wrap gap-1.5 h-[24px] overflow-hidden">
               {tags.slice(0, 3).map((tag) => (
-                <span key={tag} className="tag text-[10px] py-0.5 px-2 bg-accent/5 border-accent/10">
+                <span key={tag} className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/5 border border-accent/10 text-accent/80">
                   {tag}
                 </span>
               ))}
             </div>
             <div className="flex-shrink-0">
-              <Badge color={typeColor} dot className="text-[10px] py-0.5 px-2.5">
+              <Badge color={typeColor} dot className="text-[9px] py-0 px-2">
                 {type}
               </Badge>
             </div>
           </div>
+
 
           {/* Hover Progress Line */}
           <motion.div

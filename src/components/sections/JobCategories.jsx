@@ -7,6 +7,45 @@ import CategoryCard from '@/components/cards/CategoryCard';
 import { CATEGORIES } from '@/lib/mockData';
 import { dashboardApi } from '@/lib/api';
 
+const ICON_KEYWORDS = {
+  frontend: 'Monitor',
+  backend: 'Server',
+  cloud: 'Cloud',
+  devops: 'Workflow',
+  database: 'Database',
+  data: 'Database',
+  'ai/ml': 'Brain',
+  ai: 'Brain',
+  ml: 'Brain',
+  design: 'Palette',
+  'ui/ux': 'Palette',
+  ux: 'Palette',
+  mobile: 'Smartphone',
+  android: 'Smartphone',
+  ios: 'Smartphone',
+  security: 'Shield',
+  cyber: 'Shield',
+  fullstack: 'Layers',
+  'full stack': 'Layers',
+  api: 'Terminal',
+  software: 'Code2',
+  engineering: 'Cpu',
+  testing: 'Search',
+  qa: 'Search',
+};
+
+const COLOR_KEYWORDS = {
+  frontend: '#6366f1',
+  backend: '#8b5cf6',
+  cloud: '#06b6d4',
+  devops: '#06b6d4',
+  design: '#f43f5e',
+  ai: '#f59e0b',
+  database: '#3b82f6',
+  mobile: '#10b981',
+  security: '#ef4444',
+};
+
 const PALETTE = [
   '#6366f1', '#8b5cf6', '#d946ef', '#ec4899', '#f43f5e', 
   '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#84cc16'
@@ -17,19 +56,39 @@ const VARIETY_ICONS = [
   'Code2', 'Database', 'Shield', 'Smartphone', 'Layers', 'Terminal'
 ];
 
+const getSemanticIcon = (label) => {
+  const lowLabel = label.toLowerCase();
+  for (const [key, icon] of Object.entries(ICON_KEYWORDS)) {
+    if (lowLabel.includes(key)) return icon;
+  }
+  return null;
+};
+
+const getSemanticColor = (label) => {
+  const lowLabel = label.toLowerCase();
+  for (const [key, color] of Object.entries(COLOR_KEYWORDS)) {
+    if (lowLabel.includes(key)) return color;
+  }
+  return null;
+};
+
 export default function JobCategories({ initialCategories = [] }) {
   const enrichCategories = (cats) => {
     return cats.map((cat, i) => {
       const existing = CATEGORIES.find(c => c.label === cat.label);
+      const semanticIcon = getSemanticIcon(cat.label);
+      const semanticColor = getSemanticColor(cat.label);
+
       return {
         ...cat,
         id: cat.id || existing?.id || (cat.label ? cat.label.toLowerCase() : `cat-${i}`),
-        icon: cat.icon && cat.icon !== 'Grid3x3' ? cat.icon : (existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
-        color: cat.color && cat.color !== '#06b6d4' ? cat.color : (existing?.color || PALETTE[i % PALETTE.length]),
+        icon: cat.icon && cat.icon !== 'Grid3x3' ? cat.icon : (semanticIcon || existing?.icon || VARIETY_ICONS[i % VARIETY_ICONS.length]),
+        color: cat.color && cat.color !== '#06b6d4' ? cat.color : (semanticColor || existing?.color || PALETTE[i % PALETTE.length]),
         count: cat.count || (cat.jobs_count ? `${cat.jobs_count} jobs` : '0 jobs')
       };
     });
   };
+
 
   const [categories, setCategories] = useState(enrichCategories(initialCategories));
   const [isLoading, setIsLoading] = useState(initialCategories.length === 0);
