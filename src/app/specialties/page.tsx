@@ -9,28 +9,71 @@ async function getAllSpecialties() {
   }
   
   try {
-    const res = await fetch(`${API_URL}/api/dashboard/stats/`, {
-      next: { revalidate: 3600 },
+    const res = await fetch(`${API_URL}/api/jobs/`, {
+      next: { revalidate: 0 },
     });
     const result = await res.json();
-    const stats = result?.data || result;
-
-    if (stats && stats.specialties) {
-      return stats.specialties.map((spec: any) => {
-        const existing = CATEGORIES.find(c => c.label === spec.label);
-        return {
-          id: existing?.id || spec.label.toLowerCase(),
-          label: spec.label,
-          count: `${spec.count} jobs`,
-          icon: existing?.icon || 'Grid3x3',
-          color: existing?.color || '#06b6d4'
-        };
-      });
+    let jobs: any[] = [];
+    if (Array.isArray(result)) {
+      jobs = result;
+    } else if (Array.isArray(result?.data?.results)) {
+      jobs = result.data.results;
+    } else if (Array.isArray(result?.results)) {
+      jobs = result.results;
+    } else if (Array.isArray(result?.data)) {
+      jobs = result.data;
     }
-    return [];
+
+    const counts: Record<string, number> = {};
+    jobs.forEach((job: any) => {
+      let tags: string[] = [];
+      
+      // Extract from tech_stack
+      if (Array.isArray(job.tech_stack)) {
+        tags = job.tech_stack;
+      } else if (typeof job.tech_stack === 'string') {
+        const raw = job.tech_stack.trim();
+        if (raw.startsWith('[') && raw.endsWith(']')) {
+          tags = raw.slice(1, -1).split(',').map((t: string) => t.trim().replace(/^['"]|['"]$/g, ''));
+        } else {
+          tags = raw.split(',').map((t: string) => t.trim());
+        }
+      }
+      
+      // Also add category if it exists
+      if (job.category) {
+        tags.push(job.category);
+      }
+      
+      // Add job_role or industry if available and tech stack is empty
+      if (tags.length === 0 && job.job_role) tags.push(job.job_role);
+
+      tags.filter(t => t && t.length > 0).forEach(tag => {
+        // Capitalize properly
+        const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+        counts[formattedTag] = (counts[formattedTag] || 0) + 1;
+      });
+    });
+
+    const processed = Object.entries(counts).map(([label, count]) => {
+      return {
+        id: label.toLowerCase(),
+        label: label,
+        count: `${count} jobs`,
+      };
+    });
+
+    processed.sort((a, b) => parseInt(b.count) - parseInt(a.count));
+    
+    if (processed.length === 0) {
+      return CATEGORIES.map(cat => ({ ...cat, count: '0 jobs' }));
+    }
+    
+    return processed;
+    
   } catch (error) {
-    console.error('Failed to fetch specialties:', error);
-    return [];
+    console.error('Failed to fetch dynamic specialties:', error);
+    return CATEGORIES.map(cat => ({ ...cat, count: '0 jobs' }));
   }
 }
 

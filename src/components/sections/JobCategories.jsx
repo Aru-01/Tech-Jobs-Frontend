@@ -90,78 +90,7 @@ export default function JobCategories({ initialCategories = [] }) {
   };
 
 
-  const [categories, setCategories] = useState(enrichCategories(initialCategories));
-  const [isLoading, setIsLoading] = useState(true); // always fetch dynamic on client to ensure latest job count
-
-  useEffect(() => {
-    const fetchDynamicStats = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch all jobs to count dynamically
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tech-jobs-backend.vercel.app'}/api/jobs/`);
-        const data = await response.json();
-        const jobs = data.results || data || [];
-
-        // Count categories dynamically from job type, category, or tech_stack
-        const counts = {};
-        jobs.forEach(job => {
-          // If job has tech_stack array, count each
-          if (Array.isArray(job.tech_stack)) {
-            job.tech_stack.forEach(tag => {
-              const lowerTag = tag.toLowerCase();
-              counts[lowerTag] = (counts[lowerTag] || 0) + 1;
-            });
-          } else if (typeof job.tech_stack === 'string') {
-            const raw = job.tech_stack.trim();
-            let tags = [];
-            if (raw.startsWith('[') && raw.endsWith(']')) {
-              tags = raw.slice(1, -1).split(',').map(t => t.trim().replace(/^['"]|['"]$/g, ''));
-            } else {
-              tags = raw.split(',').map(t => t.trim());
-            }
-            tags.filter(t => t).forEach(tag => {
-              const lowerTag = tag.toLowerCase();
-              counts[lowerTag] = (counts[lowerTag] || 0) + 1;
-            });
-          }
-          
-          // Count categories as well
-          if (job.category) {
-            const catLower = job.category.toLowerCase();
-            counts[catLower] = (counts[catLower] || 0) + 1;
-          }
-        });
-
-        // Merge with our predefined categories so we have the nice icons
-        const processed = CATEGORIES.map(cat => {
-          let count = 0;
-          // Look for matching keys in our dynamic counts
-          Object.keys(counts).forEach(key => {
-            if (key.includes(cat.id) || key.includes(cat.label.toLowerCase())) {
-              count += counts[key];
-            }
-          });
-          return {
-            ...cat,
-            count: `${count} jobs`,
-          };
-        });
-
-        // Sort by count descending
-        processed.sort((a, b) => parseInt(b.count) - parseInt(a.count));
-
-        setCategories(enrichCategories(processed));
-      } catch (error) {
-        console.error('Failed to fetch dynamic job stats:', error);
-        if (initialCategories.length > 0) {
-          setCategories(enrichCategories(initialCategories));
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchDynamicStats();
-  }, []);
+  const [categories] = useState(enrichCategories(initialCategories));
 
 
   // Show max 12 (3 lines of 4)
@@ -224,11 +153,10 @@ export default function JobCategories({ initialCategories = [] }) {
 
         {/* Categories Grid - 4 cols on lg */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {isLoading ? (
-            // Skeleton Loader
-            Array(8).fill(0).map((_, i) => (
-              <div key={i} className="h-48 rounded-3xl bg-white/5 animate-pulse border border-white/10" />
-            ))
+          {categories.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-slate-400">
+              No specialties found. Add some jobs to see them here!
+            </div>
           ) : (
             displayed.map((cat, i) => (
               <CategoryCard key={cat.id || i} category={cat} index={i} />
