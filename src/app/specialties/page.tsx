@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import JobCategories from '@/components/sections/JobCategories';
 import { CATEGORIES } from '@/lib/mockData';
 import { Grid3x3, Search } from 'lucide-react';

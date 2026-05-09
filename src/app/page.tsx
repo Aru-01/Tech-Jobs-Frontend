@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import HeroSection from '@/components/hero/HeroSection';
 import FeaturedJobs from '@/components/sections/FeaturedJobs';
@@ -90,7 +91,7 @@ async function getCategoryStats() {
 
 async function JobCategoriesSection() {
   const initialCategories = await getCategoryStats();
-  return <JobCategories initialCategories={initialCategories} />;
+  return <JobCategories initialCategories={initialCategories as any} />;
 }
 
 function CategoriesSkeleton() {

@@ -12,7 +12,7 @@ if (typeof window !== 'undefined') {
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // Send cookies with every request (for JWTCookieAuthentication)
-  timeout: 15000,        // 15-second timeout
+  timeout: 30000,        // 30-second timeout for Vercel cold starts
   headers: {
     Accept: 'application/json',
   },
@@ -22,7 +22,7 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
@@ -65,11 +65,16 @@ axiosInstance.interceptors.response.use(
 
       if (data && typeof data === 'object') {
         if (data.success === false && data.message) {
-          console.error('[API Error Detail]:', data);
+          // Do not log expected 401 unauthenticated errors to keep console clean for guests
+          if (status !== 401 && !data.message.includes('Authentication credentials were not provided')) {
+            console.error('[API Error Detail]:', data);
+          }
           return Promise.resolve(data);
         }
         // Raw DRF/allauth error format
-        console.error('[Raw API Error]:', data);
+        if (status !== 401) {
+          console.error('[Raw API Error]:', data);
+        }
         message = data.detail || data.non_field_errors?.[0] || data.message || 'An error occurred';
         errors = data;
       }
